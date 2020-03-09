@@ -1,0 +1,87 @@
+<?php
+//    Copyright (c) 2020 Norbert Rühl
+//    
+//    This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+//    
+//    Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+//    
+//        1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+//    
+//        2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+//    
+//        3. This notice may not be removed or altered from any source distribution.
+?>
+<?php
+require_once __DIR__ . '/Config.php';
+
+class SQLConfig extends Config
+{
+    private $hostname;
+    private $port;
+    private $database_name;
+    private $username;
+    private $password;
+
+    public function __construct()
+    {
+        $this->hostname ='localhost';
+        $this->port = 3306;
+        $this->database_name = '';
+        $this->username = '';
+        $this->password = '';
+        parent::__construct(__DIR__.'/../../config/database.ini');
+    }
+
+    public function parse_file($ini_data)
+    {
+        if(is_string($ini_data['Hostname']))
+        {
+            $this->hostname = (string)$ini_data['Hostname'];
+        }
+
+        if(is_string($ini_data['Port']))
+        {
+            $this->port = (int)$ini_data['Hostname'];
+        }
+
+        if(is_string($ini_data['Name']))
+        {
+            $this->database_name = (string)$ini_data['Name'];
+        }
+
+        if(is_string($ini_data['Username']))
+        {
+            $this->username = (string)$ini_data['Username'];
+        }
+
+        if(is_string($ini_data['Password']))
+        {
+            $this->password = (string)$ini_data['Password'];
+        }
+    }
+
+    public function getHostname(): string
+    {
+        return $this->hostname;
+    }
+
+    public function getPort(): int
+    {
+        return $this->port;
+    }
+
+    public function getDatabaseName(): string
+    {
+        return $this->database_name;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+}

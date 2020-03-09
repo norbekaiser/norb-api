@@ -1,0 +1,53 @@
+<?php
+//    Copyright (c) 2020 Norbert Rühl
+//    
+//    This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+//    
+//    Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+//    
+//        1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+//    
+//        2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+//    
+//        3. This notice may not be removed or altered from any source distribution.
+?>
+<?php
+require_once __DIR__ . '/DatabaseConnector.php';
+require_once __DIR__ . '/../Config/RedisConfig.php';
+require_once __DIR__ . '/../Exceptions/NoConnectivityRedis.php';
+
+class databaseConnectorRedis extends databaseConnector
+{
+    private $redis = null;
+
+    public function __construct(RedisConfig $config)
+    {
+        try
+        {
+            $this->redis = new Redis();//not quite sure if it throws or what redis connect does
+            $this->redis->connect($config->getHostname(),$config->getPort());
+            if(!empty($config->getPassword()))
+            {
+                $this->redis->auth($config->getPassword());
+            }
+            $this->redis->select($config->getDatabaseId());
+        }
+        catch (Exception $e)
+        {
+            throw new NoConnectivityRedis();
+        }
+    }
+
+    public function __destruct()
+    {
+        if(isset($this->redis))
+        {
+            $this->redis->close();
+        }
+    }
+
+    public function getConnection()
+    {
+         return $this->redis;
+    }
+}
