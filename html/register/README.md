@@ -20,6 +20,7 @@ ___
 | g_recaptcha_response | String | The Recaptcha Response From the User Client |
 
 ### Example
+
 ```json
 {
     "username": "user",
@@ -29,6 +30,7 @@ ___
 ```
 
 ### On Success 
+
 ```http request
 'HTTP/1.1 200 OK'
 ```
@@ -41,6 +43,7 @@ ___
 ### On Failure
 
 #### Faulty Input Format 
+
 ```http request
 'HTTP/1.1 400 Bad Request'
 ```
@@ -86,6 +89,7 @@ ___
 ```
 
 #### Faulty Input Data
+
 ```http request
 'HTTP/1.1 422 Unprocessable Entity'
 ```

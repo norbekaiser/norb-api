@@ -37,6 +37,11 @@ abstract class AbstractController //TODO consider, abstract authorized controlel
         return $this->MethodNotAvailableResponse();
     }
 
+    protected function PatchRequest()
+    {
+        return $this->MethodNotAvailableResponse();
+    }
+
     protected function DelRequest()
     {
         return $this->MethodNotAvailableResponse();
@@ -60,6 +65,9 @@ abstract class AbstractController //TODO consider, abstract authorized controlel
                 break;
             case 'PUT':
                 $resp = $this->PutRequest();
+                break;
+            case 'PATCH':
+                $resp = $this->PatchRequest();
                 break;
             case 'DELETE':
                 $resp = $this->DelRequest();

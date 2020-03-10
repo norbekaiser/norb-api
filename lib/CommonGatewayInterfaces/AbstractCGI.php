@@ -25,6 +25,8 @@ abstract class AbstractCGI
         $this->reqMeth = $_SERVER["REQUEST_METHOD"];
         $this->uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $this->uri = explode('/', $this->uri);
+        $this->uri = array_filter($this->uri);
+        $this->uri = array_slice($this->uri,1,sizeof($this->uri));
         try
         {
             $this->processRequest();
