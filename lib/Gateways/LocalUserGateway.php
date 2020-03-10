@@ -85,7 +85,7 @@ class LocalUserGateway
     public function AuthLocalUser(string $username, string $password): LocalUser
     {
         $query= <<<'SQL'
-            CALL authlocaluser(?,?)
+            CALL users_local_authenticate(?,?)
         SQL;
         $stmt = $this->sql_db->prepare($query);
         $stmt->bind_param('ss',$username,$password);
@@ -101,6 +101,20 @@ class LocalUserGateway
         return $LocalUser;
     }
 
+    public function ChangePassword(LocalUser $user,string $password): void
+    {
+        $query=<<<'SQL'
+            CALL users_local_change_password(?,?)
+        SQL;
+        $stmt = $this->sql_db->prepare($query);
+        $stmt->bind_param('ss',$user->getUsername(),$password);
+        $stmt->execute();
+        if($stmt->affected_rows !=1)
+        {
+            throw new Exception("Password not Changed");
+        }
+
+    }
 
 }
 

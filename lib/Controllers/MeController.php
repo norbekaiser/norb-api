@@ -14,6 +14,7 @@
 <?php
 require_once __DIR__ . '/AbstractHeaderController.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
+require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
@@ -52,12 +53,43 @@ class MeController extends AbstractHeaderController
         );
     }
 
+    private function require_valid_session()
+    {
+        if(is_null($this->User))
+        {
+            throw new HTTP401_Unauthorized();
+        }
+    }
+
     protected function GetRequest()
     {
+        $this->require_valid_session();
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         try {
             $this->LocalUserGateway = new LocalUserGateway();
             $localuser = $this->LocalUserGateway->findUser($this->User->getUsrId());
+            $resp['data'] = $this->LocalUser_data_to_resp($localuser);
+            return $resp;
+        }
+        catch (Exception $e){}
+        try {
+            $this->LdapUserGateway = new LdapUserGateway();
+            $ldapuser = $this->LdapUserGateway->findUserID($this->User->getUsrId());
+            $resp['data'] = $this->LdapUser_data_to_resp($ldapuser);
+            return $resp;
+        }
+        catch (Exception $e){}
+        throw new HTTP422_UnprocessableEntity();
+    }
+
+    protected function PatchRequest()
+    {
+        $this->require_valid_session();
+        $resp['status_code_header'] = 'HTTP/1.1 200 OK';//ggf modified?
+        try {
+            $this->LocalUserGateway = new LocalUserGateway();
+            $localuser = $this->LocalUserGateway->findUser($this->User->getUsrId());
+            $this->LocalUserGateway->ChangePassword($localuser,"gasto1234");
             $resp['data'] = $this->LocalUser_data_to_resp($localuser);
             return $resp;
         }
@@ -83,7 +115,7 @@ class MeController extends AbstractHeaderController
         }
         catch (Exception $e)
         {
-            throw new HTTP401_Unauthorized();
+            $this->User = null;
         }
     }
 }

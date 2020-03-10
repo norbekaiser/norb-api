@@ -132,4 +132,9 @@ class LdapUserGateway
         }
         return $ldap_user;
     }
+
+    public function ChangePassword(LDAPUser $LDAPUser,string $password): void
+    {
+        //TODO add functionality to change a user password
+    }
 }

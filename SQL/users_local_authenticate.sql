@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE authlocaluser
+CREATE OR REPLACE PROCEDURE users_local_authenticate
 (IN auth_username VARCHAR(120) , IN auth_password VARCHAR(120))
 BEGIN
     IF exists (SELECT 1 FROM users_local WHERE users_local.username= auth_username) then
