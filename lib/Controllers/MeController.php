@@ -15,6 +15,7 @@
 require_once __DIR__ . '/AbstractHeaderController.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
+require_once __DIR__ . '/../Config/RegistrationConfig.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
@@ -28,6 +29,12 @@ class MeController extends AbstractHeaderController
     private $sessionGateway = null;
     private $User = null;
 
+    /**
+     * The Me Controller qruies a session and user gateway, other gateways are used on demand
+     * MeController constructor.
+     * @param string $requestMethod
+     * @param string $Authorization
+     */
     public function __construct(string $requestMethod,string $Authorization)
     {
         $this->UserGateway = new UserGateway();
@@ -35,6 +42,11 @@ class MeController extends AbstractHeaderController
         parent::__construct($requestMethod,$Authorization);
     }
 
+    /**
+     * Maps the Local User to the result
+     * @param LocalUser $user
+     * @return array
+     */
     private function LocalUser_data_to_resp(LocalUser $user): array
     {
         return array(
@@ -44,6 +56,11 @@ class MeController extends AbstractHeaderController
         );
     }
 
+    /**
+     * Maps the LDAP user to the result
+     * @param LDAPUser $user
+     * @return array
+     */
     private function LdapUser_data_to_resp(LDAPUser $user): array
     {
         return array(
@@ -53,6 +70,10 @@ class MeController extends AbstractHeaderController
         );
     }
 
+    /**
+     * Verifys that a session user was issued
+     * @throws HTTP401_Unauthorized
+     */
     private function require_valid_session()
     {
         if(is_null($this->User))
@@ -61,9 +82,16 @@ class MeController extends AbstractHeaderController
         }
     }
 
+    /**
+     * Returns the User Data
+     * @return mixed|void boils down to at least usr_id  and username/dn( also username)
+     * @throws HTTP401_Unauthorized , requires a valid session
+     * @throws HTTP422_UnprocessableEntity, if the user can't be found either in userlocal or userldap , this will hapoen
+     */
     protected function GetRequest()
     {
         $this->require_valid_session();
+        $input = (array) json_decode(file_get_contents('php://input'), true);
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         try {
             $this->LocalUserGateway = new LocalUserGateway();
@@ -82,14 +110,23 @@ class MeController extends AbstractHeaderController
         throw new HTTP422_UnprocessableEntity();
     }
 
+    /**
+     * Can Be Currently used to change the password, planed are more details in the future, e.g. mail etc ( ldap attributes in general)
+     * @return mixed|void
+     * @throws HTTP400_BadRequest, if the input format is not valid, e.g. nothing to be done
+     * @throws HTTP401_Unauthorized, if no valid session exists
+     * @throws HTTP422_UnprocessableEntity, if it can be processed, ( e.g. not enough password digits)
+     */
     protected function PatchRequest()
     {
         $this->require_valid_session();
+        $input = (array) json_decode(file_get_contents('php://input'), true);
+        $this->validatePasswordChange($input);
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';//ggf modified?
         try {
             $this->LocalUserGateway = new LocalUserGateway();
             $localuser = $this->LocalUserGateway->findUser($this->User->getUsrId());
-            $this->LocalUserGateway->ChangePassword($localuser,"gasto1234");
+            $this->LocalUserGateway->ChangePassword($localuser,$input['password']);
             $resp['data'] = $this->LocalUser_data_to_resp($localuser);
             return $resp;
         }
@@ -97,6 +134,7 @@ class MeController extends AbstractHeaderController
         try {
             $this->LdapUserGateway = new LdapUserGateway();
             $ldapuser = $this->LdapUserGateway->findUserID($this->User->getUsrId());
+            $this->LdapUserGateway->ChangePassword($ldapuser,$input['password']);
             $resp['data'] = $this->LdapUser_data_to_resp($ldapuser);
             return $resp;
         }
@@ -104,7 +142,9 @@ class MeController extends AbstractHeaderController
         throw new HTTP422_UnprocessableEntity();
     }
 
-
+    /**
+     * Parses The Authorization String, and create a session on demand
+     */
     protected function ParseAuthorization()
     {
         try
@@ -116,6 +156,35 @@ class MeController extends AbstractHeaderController
         catch (Exception $e)
         {
             $this->User = null;
+        }
+    }
+
+    /**
+     * Verifys the Input Password Data, if the password criteria still matches
+     * @param $input
+     * @throws HTTP400_BadRequest
+     */
+    private function validatePasswordChange($input){
+        $RegistrationConfig = new RegistrationConfig();
+        if(!isset($input['password']))
+        {
+            throw new HTTP400_BadRequest("No Password Supplied");
+        }
+        /** password must be at least 8 letters long */
+        if(strlen($input['password']) < $RegistrationConfig->getMinLength())
+        {
+
+            throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+        }
+
+        if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
+        {
+            throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
+        }
+
+        if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
+        {
+            throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
         }
     }
 }

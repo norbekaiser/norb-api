@@ -24,12 +24,21 @@ class LdapUserGateway
 {
     use SQLGateway, LDAPGateway;
 
+    /**
+     * The Gateway requires a sql and an ldap connection
+     * LdapUserGateway constructor.
+     */
     public function __construct()
     {
         $this->init_sql();
         $this->init_ldap();
     }
 
+    /**
+     * Helper Function used to map mysqli results to the result
+     * @param mysqli_result $result
+     * @return LDAPUser
+     */
     private function result_to_LDAPUser(mysqli_result $result) :LDAPUser
     {
         $userData = $result->fetch_assoc();
@@ -61,6 +70,12 @@ class LdapUserGateway
         return $this->result_to_LDAPUser($result);
     }
 
+    /**
+     * Finds a Ldap User in the Local Table, he will be there if he hase once used the service
+     * @param string $dn
+     * @return LDAPUser
+     * @throws Exception
+     */
     public function findUserDN(string $dn): LDAPUser
     {
         $query = <<<'SQL'
@@ -82,6 +97,12 @@ class LdapUserGateway
         return $this->result_to_LDAPUser($result);
     }
 
+    /**
+     * Inserts a DN into the local table
+     * @param string $dn
+     * @return LDAPUser
+     * @throws Exception
+     */
     public function InsertUserDN(string $dn): LDAPUser
     {
         $LDAPUser = new LDAPUser();
@@ -109,7 +130,13 @@ class LdapUserGateway
         return $LDAPUser;
     }
 
-
+    /**
+     * Authenticates a user against the LDAP DB, if no mapping exists locally, it is tried to be added
+     * @param $username
+     * @param $password
+     * @return LDAPUser
+     * @throws Exception
+     */
     public function AuthenticateUser($username,$password): LDAPUser
     {
         $ldap_config = new LDAPConfig();
@@ -135,6 +162,12 @@ class LdapUserGateway
 
     public function ChangePassword(LDAPUser $LDAPUser,string $password): void
     {
-        //TODO add functionality to change a user password
+        var_dump($password);
+        $salt = substr(bin2hex(openssl_random_pseudo_bytes(16)),0,16);
+        $values["userPassword"] = "{CRYPT}".crypt($password,'$6$'.$salt);
+        var_dump( ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values));
+        var_dump($values);
+
+        die;
     }
 }
