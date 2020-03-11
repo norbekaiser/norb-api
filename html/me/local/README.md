@@ -1,4 +1,4 @@
-# Endpoint: {api_url}/me/ldap/
+# Endpoint: {api_url}/me/local/
 This Endpoint is Responsible for returning current User Data
 
 # HTTP Requests
