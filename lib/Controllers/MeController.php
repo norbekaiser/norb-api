@@ -67,6 +67,12 @@ class MeController extends AbstractHeaderController
             'usr_id' => $user->getUsrId(),
             'username' => $user->getDn(),
             'member_since' => $user->getMemberSince(),
+            'cn' => $user->getCn(),
+            "uid" => $user->getUid(),
+            "uidNumber" => $user->getUidNUmber(),
+            "gidNumber" => $user->getGidNUmber(),
+            "homeDirectory" => $user->getHomeDirectory(),
+            "loginShell" => $user->getLoginShell(),
         );
     }
 
@@ -111,7 +117,7 @@ class MeController extends AbstractHeaderController
     }
 
     /**
-     * Can Be Currently used to change the password, planed are more details in the future, e.g. mail etc ( ldap attributes in general)
+     * Will Be Used to Modify Any Personal Data, e.g. certain ( e.g. username)
      * @return mixed|void
      * @throws HTTP400_BadRequest, if the input format is not valid, e.g. nothing to be done
      * @throws HTTP401_Unauthorized, if no valid session exists
@@ -121,12 +127,15 @@ class MeController extends AbstractHeaderController
     {
         $this->require_valid_session();
         $input = (array) json_decode(file_get_contents('php://input'), true);
-        $this->validatePasswordChange($input);
+        $this->validatePatchData($input);
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';//ggf modified?
         try {
             $this->LocalUserGateway = new LocalUserGateway();
             $localuser = $this->LocalUserGateway->findUser($this->User->getUsrId());
-            $this->LocalUserGateway->ChangePassword($localuser,$input['password']);
+            if(isset($input['password']))
+            {
+                $this->LocalUserGateway->ChangePassword($localuser,$input['password']);
+            }
             $resp['data'] = $this->LocalUser_data_to_resp($localuser);
             return $resp;
         }
@@ -134,7 +143,10 @@ class MeController extends AbstractHeaderController
         try {
             $this->LdapUserGateway = new LdapUserGateway();
             $ldapuser = $this->LdapUserGateway->findUserID($this->User->getUsrId());
-            $this->LdapUserGateway->ChangePassword($ldapuser,$input['password']);
+            if(isset($input['password']))
+            {
+                $this->LdapUserGateway->ChangePassword($ldapuser,$input['password']);
+            }
             $resp['data'] = $this->LdapUser_data_to_resp($ldapuser);
             return $resp;
         }
@@ -164,27 +176,30 @@ class MeController extends AbstractHeaderController
      * @param $input
      * @throws HTTP400_BadRequest
      */
-    private function validatePasswordChange($input){
+    private function validatePatchData($input){
         $RegistrationConfig = new RegistrationConfig();
-        if(!isset($input['password']))
+        /**
+         * Verifys Data If A Password Change is Requried
+         */
+        if(isset($input['password']))
         {
-            throw new HTTP400_BadRequest("No Password Supplied");
-        }
-        /** password must be at least 8 letters long */
-        if(strlen($input['password']) < $RegistrationConfig->getMinLength())
-        {
+            /** password must be at least 8 letters long */
+            if(strlen($input['password']) < $RegistrationConfig->getMinLength())
+            {
 
-            throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+                throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+            }
+
+            if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
+            {
+                throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
+            }
+
+            if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
+            {
+                throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
+            }
         }
 
-        if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
-        {
-            throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
-        }
-
-        if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
-        {
-            throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
-        }
     }
 }

@@ -13,21 +13,21 @@
 ?>
 <?php
 require_once __DIR__ .'/User.php';
+require_once __DIR__ . '/Traits/PosixAccount.php';
 
 class LDAPUser extends User
 {
-    private $dn;
+    use PosixAccount;
 
-    public function getDn(): string
+    private $DN;
+
+    public function getDN(): string
     {
-        return $this->dn;
+        return $this->DN;
     }
 
-    public function setDn(string $dn): void
+    public function setDN(string $DN): void
     {
-        $this->dn = $dn;
+        $this->DN = $DN;
     }
-
-
-
 }

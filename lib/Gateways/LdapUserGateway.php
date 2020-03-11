@@ -45,7 +45,7 @@ class LdapUserGateway
         $LDAPUser = new LDAPUser();
         $LDAPUser->setUsrId($userData['usr_id']);
         $LDAPUser->setMemberSince($userData['member_since']);
-        $LDAPUser->setDn($userData['dn']);
+        $LDAPUser->setDN($userData['dn']);
         return $LDAPUser;
     }
 
@@ -67,7 +67,9 @@ class LdapUserGateway
         {
             throw new Exception("LDAPUser Could not be found");
         }
-        return $this->result_to_LDAPUser($result);
+        $res =  $this->result_to_LDAPUser($result);
+        $this->fillLdapUserData($res);
+        return $res;
     }
 
     /**
@@ -94,7 +96,9 @@ class LdapUserGateway
         {
             throw new Exception("LDAPUser Could not be found");
         }
-        return $this->result_to_LDAPUser($result);
+        $res =  $this->result_to_LDAPUser($result);
+        $this->fillLdapUserData($res);
+        return $res;
     }
 
     /**
@@ -106,7 +110,7 @@ class LdapUserGateway
     public function InsertUserDN(string $dn): LDAPUser
     {
         $LDAPUser = new LDAPUser();
-        $LDAPUser->setDn($dn);
+        $LDAPUser->setDN($dn);
         $query = <<<'SQL'
             CALL addldapuser(?,@userid)
         SQL;
@@ -160,14 +164,36 @@ class LdapUserGateway
         return $ldap_user;
     }
 
+    private function fillLdapUserDataPosixAccount(LDAPUser &$LDAPUser)
+    {
+        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=PosixAccount");
+        $data = ldap_get_entries($this->ldap_db,$search);
+        $LDAPUser->setCn($data[0]['cn'][0]);
+        $LDAPUser->setUid($data[0]['uid'][0]);
+        $LDAPUser->setGidNUmber($data[0]['gidnumber'][0]);
+        $LDAPUser->setUidNUmber($data[0]['uidnumber'][0]);
+        $LDAPUser->setHomeDirectory($data[0]['homedirectory'][0]);
+        if(isset($data[0]['loginshell']))
+        {
+            $LDAPUser->setLoginShell($data[0]['loginshell'][0]);
+        }
+    }
+
+    private function fillLdapUserData(LDAPUser &$LDAPUser)
+    {
+
+        $this->fillLdapUserDataPosixAccount($LDAPUser);
+        //todo add support for more schemes
+
+    }
+
     public function ChangePassword(LDAPUser $LDAPUser,string $password): void
     {
-        var_dump($password);
         $salt = substr(bin2hex(openssl_random_pseudo_bytes(16)),0,16);
         $values["userPassword"] = "{CRYPT}".crypt($password,'$6$'.$salt);
-        var_dump( ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values));
-        var_dump($values);
-
-        die;
+        if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
+        {
+            throw new Exception("Could not Modify Password");
+        }
     }
 }
