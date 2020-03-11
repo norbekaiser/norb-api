@@ -22,7 +22,7 @@ require_once __DIR__ . '/../Models/LDAPUser.php';
  */
 class LdapUserGateway
 {
-    use SQLGateway, LDAPGateway;
+    use LDAPGateway;
 
     /**
      * The Gateway requires a sql and an ldap connection
@@ -30,108 +30,28 @@ class LdapUserGateway
      */
     public function __construct()
     {
-        $this->init_sql();
         $this->init_ldap();
     }
 
-    /**
-     * Helper Function used to map mysqli results to the result
-     * @param mysqli_result $result
-     * @return LDAPUser
-     */
-    private function result_to_LDAPUser(mysqli_result $result) :LDAPUser
+    public function fillUser(LDAPUser $LDAPUser): LDAPUser
     {
-        $userData = $result->fetch_assoc();
-        $LDAPUser = new LDAPUser();
-        $LDAPUser->setUsrId($userData['usr_id']);
-        $LDAPUser->setMemberSince($userData['member_since']);
-        $LDAPUser->setDN($userData['dn']);
-        return $LDAPUser;
+        $this->fillLdapUserDataPosixAccount($LDAPUser);
+        return  $LDAPUser;
     }
 
-    public function findUserID(int $usr_id): LDAPUser
+    private function fillLdapUserDataPosixAccount(LDAPUser &$LDAPUser)
     {
-        $query = <<<'SQL'
-            SELECT users_id.id as usr_id,
-                   users_id.member_since as member_since,
-                   users_ldap.dn as dn
-            FROM users_ldap 
-            INNER JOIN users_id ON users_ldap.usr_id = users_id.id 
-            WHERE usr_id=? LIMIT 1
-        SQL;
-        $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('i',$usr_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if($result->num_rows != 1)
+        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=PosixAccount");
+        $data = ldap_get_entries($this->ldap_db,$search);
+        $LDAPUser->setCn($data[0]['cn'][0]);
+        $LDAPUser->setUid($data[0]['uid'][0]);
+        $LDAPUser->setGidNUmber($data[0]['gidnumber'][0]);
+        $LDAPUser->setUidNUmber($data[0]['uidnumber'][0]);
+        $LDAPUser->setHomeDirectory($data[0]['homedirectory'][0]);
+        if(isset($data[0]['loginshell']))
         {
-            throw new Exception("LDAPUser Could not be found");
+            $LDAPUser->setLoginShell($data[0]['loginshell'][0]);
         }
-        $res =  $this->result_to_LDAPUser($result);
-        $this->fillLdapUserData($res);
-        return $res;
-    }
-
-    /**
-     * Finds a Ldap User in the Local Table, he will be there if he hase once used the service
-     * @param string $dn
-     * @return LDAPUser
-     * @throws Exception
-     */
-    public function findUserDN(string $dn): LDAPUser
-    {
-        $query = <<<'SQL'
-            SELECT users_id.id as usr_id,
-                   users_id.member_since as member_since,
-                   users_ldap.dn as dn
-            FROM users_ldap 
-            INNER JOIN users_id ON users_ldap.usr_id = users_id.id 
-            WHERE dn=? LIMIT 1
-        SQL;
-        $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('s',$dn);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if($result->num_rows != 1)
-        {
-            throw new Exception("LDAPUser Could not be found");
-        }
-        $res =  $this->result_to_LDAPUser($result);
-        $this->fillLdapUserData($res);
-        return $res;
-    }
-
-    /**
-     * Inserts a DN into the local table
-     * @param string $dn
-     * @return LDAPUser
-     * @throws Exception
-     */
-    public function InsertUserDN(string $dn): LDAPUser
-    {
-        $LDAPUser = new LDAPUser();
-        $LDAPUser->setDN($dn);
-        $query = <<<'SQL'
-            CALL addldapuser(?,@userid)
-        SQL;
-        $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('s',$dn);
-        $stmt->execute();
-        //retrieving the user id of the newly created user
-        $query2 = <<<'SQL'
-            SELECT @userid AS usr_id
-        SQL;
-        $stmt2 = $this->sql_db->query($query2);
-        $usr_id = $stmt2->fetch_assoc();
-        if(is_null($usr_id['usr_id']))
-        {
-            throw new Exception("LDAPUser Could not be Created");
-        }
-        else
-        {
-            $LDAPUser->setUsrId($usr_id['usr_id']);
-        }
-        return $LDAPUser;
     }
 
     /**
@@ -150,41 +70,11 @@ class LdapUserGateway
         {
             throw new Exception("Could not Authenticate against LDAP");
         }
+        $LDAPUser = new LDAPUser();
+        $LDAPUser->setDN($ldap_username);
+        //todo fill with data?
         //Check If User Exists
-        try{
-            $ldap_user = $this->findUserDN($ldap_username);
-        }
-        catch (Exception $e)
-        {
-            //If the User Does not exist, try to add him, if this fails, it might be disabled
-            $this->InsertUserDN($ldap_username);
-            //Once the User has been added, try to find him
-            $ldap_user = $this->findUserDN($ldap_username);
-        }
-        return $ldap_user;
-    }
-
-    private function fillLdapUserDataPosixAccount(LDAPUser &$LDAPUser)
-    {
-        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=PosixAccount");
-        $data = ldap_get_entries($this->ldap_db,$search);
-        $LDAPUser->setCn($data[0]['cn'][0]);
-        $LDAPUser->setUid($data[0]['uid'][0]);
-        $LDAPUser->setGidNUmber($data[0]['gidnumber'][0]);
-        $LDAPUser->setUidNUmber($data[0]['uidnumber'][0]);
-        $LDAPUser->setHomeDirectory($data[0]['homedirectory'][0]);
-        if(isset($data[0]['loginshell']))
-        {
-            $LDAPUser->setLoginShell($data[0]['loginshell'][0]);
-        }
-    }
-
-    private function fillLdapUserData(LDAPUser &$LDAPUser)
-    {
-
-        $this->fillLdapUserDataPosixAccount($LDAPUser);
-        //todo add support for more schemes
-
+        return $LDAPUser;
     }
 
     public function ChangePassword(LDAPUser $LDAPUser,string $password): void
@@ -194,6 +84,16 @@ class LdapUserGateway
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
             throw new Exception("Could not Modify Password");
+        }
+    }
+
+    public function ChangeEmail(LDAPUser $LDAPUser,string $email): void
+    {
+        //todo check for email is unique and can be changed
+        $values["email"] = $email;
+        if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
+        {
+            throw new Exception("Could not Modify Email");
         }
     }
 }

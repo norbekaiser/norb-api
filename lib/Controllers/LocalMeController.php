@@ -18,11 +18,10 @@ require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
-require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
 
-class MeController extends AbstractHeaderController
+class LocalMeController extends AbstractHeaderController
 {
     private $UserGateway = null;
     private $sessionGateway = null;
@@ -36,14 +35,27 @@ class MeController extends AbstractHeaderController
      */
     public function __construct(string $requestMethod,string $Authorization)
     {
-
-        $this->sessionGateway = new SessionGateway();
         $this->UserGateway = new UserGateway();
+        $this->sessionGateway = new SessionGateway();
         parent::__construct($requestMethod,$Authorization);
     }
 
     /**
-     * Helper Function to determine if Logged in
+     * Maps the Local User to the result
+     * @param LocalUser $user
+     * @return array
+     */
+    private function LocalUser_data_to_resp(LocalUser $user): array
+    {
+        return array(
+//            'usr_id' => $user->getUsrId(),
+            'username' => $user->getUsername(),
+            'member_since' => $user->getMemberSince(),
+        );
+    }
+
+    /**
+     * Verifys that a session user was issued
      * @throws HTTP401_Unauthorized
      */
     private function require_valid_session()
@@ -54,35 +66,31 @@ class MeController extends AbstractHeaderController
         }
     }
 
-    /**
-     * When Get Request
-     * @return mixed|void will return member_since data and where to find more about the user
-     * @throws HTTP401_Unauthorized, requires a valid session
-     * @throws HTTP422_UnprocessableEntity, will return 422 if for some reason the user does not exist anymore or something strange happens
-     */
     protected function GetRequest()
     {
         $this->require_valid_session();
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
-//        $resp['data']['usr_id'] = $this->User->getUsrId();//usr id does not need to be disclosed for requests, but might be nice to know
-        $resp['data']['member_since'] = $this->User->getMemberSince();
-        try {
-            $LocalUserGateway = new LocalUserGateway();
-            $localuser = $LocalUserGateway->findUser($this->User->getUsrId());
-            $resp['data']['type'] = 'local';
-            return $resp;
-        }
-        catch (Exception $e){}
-        try {
-            $LocalLdapUserGateway = new LocalLdapUserGateway();
-            $ldapuser = $LocalLdapUserGateway->findUserID($this->User->getUsrId());
-            $resp['data']['type'] = 'ldap';
-            return $resp;
-        }
-        catch (Exception $e){}
-        throw new HTTP422_UnprocessableEntity();
+        $LocalUserGateway = new LocalUserGateway();
+        $localuser = $LocalUserGateway->findUser($this->User->getUsrId());
+        $resp['data'] = $this->LocalUser_data_to_resp($localuser);
+        return $resp;
     }
 
+    protected function PatchRequest()
+    {
+        $this->require_valid_session();
+        $input = (array) json_decode(file_get_contents('php://input'), true);
+        $this->validatePatchData($input);
+        $resp['status_code_header'] = 'HTTP/1.1 200 OK';//ggf modified?
+        $LocalUserGateway = new LocalUserGateway();
+        $LocalUser = $LocalUserGateway->findUser($this->User->getUsrId());
+        if(isset($input['password']))
+        {
+            $LocalUserGateway->ChangePassword($LocalUser,$input['password']);
+        }
+        $resp['data'] = $this->LocalUser_data_to_resp($LocalUser);
+        return $resp;
+    }
 
     /**
      * Parses The Authorization String, and create a session on demand
@@ -97,9 +105,34 @@ class MeController extends AbstractHeaderController
         }
         catch (Exception $e)
         {
-            //to reduce cors problems acl is determined in the request
             $this->User = null;
         }
     }
 
+    private function validatePatchData($input){
+        $RegistrationConfig = new RegistrationConfig();
+        /**
+         * Verifys Data If A Password Change is Requried
+         */
+        if(isset($input['password']))
+        {
+            /** password must be at least 8 letters long */
+            if(strlen($input['password']) < $RegistrationConfig->getMinLength())
+            {
+
+                throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+            }
+
+            if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
+            {
+                throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
+            }
+
+            if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
+            {
+                throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
+            }
+        }
+
+    }
 }

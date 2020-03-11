@@ -13,27 +13,22 @@
 ?>
 <?php
 require_once __DIR__ . '/AbstractController.php';
-require_once __DIR__ .'/../Exceptions/HTTP422_UnprocessableEntity.php';
-require_once __DIR__ .'/../Exceptions/HTTP400_BadRequest.php';
+require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
+require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
-require_once __DIR__ .'/../Gateways/LdapUserGateway.php';
+require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
+require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 require_once __DIR__ . '/../recaptcha/recaptcha_validator.php';
 
 class AuthController extends AbstractController
 {
-    private $LocalUserGateway = null;
-    private $LdapUserGateway = null;
-    private $sessionGateway = null;
 
 
     public function __construct(string $requestMethod)
     {
         parent::__construct($requestMethod);
-        $this->LocalUserGateway = new LocalUserGateway();
-        $this->LdapUserGateway = new LdapUserGateway();
-        $this->sessionGateway = new SessionGateway();
     }
 
     private function Authenticate(string $username,string $password): User
@@ -42,7 +37,16 @@ class AuthController extends AbstractController
         //Check Against LDAP
         try
         {
-            $user = $this->LdapUserGateway->AuthenticateUser($username,$password);
+            $LdapUserGateway = new LdapUserGateway();
+            $LocalUserLdapGateway = new LocalLdapUserGateway();
+            $user = $LdapUserGateway->AuthenticateUser($username,$password);
+            try{
+                $user = $LocalUserLdapGateway->findUserDN($user->getDN());
+            }
+            catch (Exception $e)
+            {
+                $user = $LocalUserLdapGateway->InsertUserDN($user->getDN());
+            }
         }
         catch (Exception $e)
         {
@@ -51,7 +55,9 @@ class AuthController extends AbstractController
         //Check Against Local Database
         try
         {
-            $user = $this->LocalUserGateway->AuthLocalUser($username,$password);
+            $LocalUserGateway = new LocalUserGateway();
+            $user = $LocalUserGateway->AuthLocalUser($username,$password);
+            //check that the user locally exists, try to add him if he does not
         }
         catch (Exception $e)
         {
@@ -82,8 +88,8 @@ class AuthController extends AbstractController
             throw new HTTP422_UnprocessableEntity($e->getMessage());
         }
 
-        //use the 'usr_id' to create a session, return the session
-        $new_session = $this->sessionGateway->create_session($user);
+        $sessionGateway = new SessionGateway();
+        $new_session = $sessionGateway->create_session($user);
 
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         $resp['data'] = array(
