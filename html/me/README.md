@@ -24,49 +24,16 @@ Authorization: 1234567890
 ```
 
 ### On Success
-It will return the userdata, depending on the origin more ore less might be returned
-
-#### Any User
-
-```http request
-'HTTP/1.1 200 OK'
-```
-```json
-{
-    "usr_id": 1,
-    "member_since": "2020-02-02 02:02:02"
-}
-```
-
-#### Local User
- 
-```http request
-'HTTP/1.1 200 OK'
-```
-```json
-{
-    "usr_id": 1,
-    "username": "user",
-    "member_since": "2020-02-02 02:02:02"
-}
-```
-
-#### LDAP Posix User
+It will return the Userdata, and which type the user data
+Further Requests to {API_URL}/me/type will give more details
 
 ```http request
 'HTTP/1.1 200 OK'
 ```
 ```json
 {
-    "usr_id": 1,
-    "username": "cn=dave,ou=users,dc=ldap,dc=example,dc=com",
     "member_since": "2020-02-02 02:02:02",
-    "cn": "user",
-    "uid": "user",
-    "uidNumber": "1000",
-    "gidNumber": "1000",
-    "homeDirectory": "/home/users/user",
-    "loginShell": "/bin/bash"
+    "type": "local"
 }
 ```
 

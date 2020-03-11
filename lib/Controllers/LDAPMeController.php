@@ -13,6 +13,7 @@
 ?>
 <?php
 require_once __DIR__ . '/AbstractHeaderController.php';
+require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
@@ -102,15 +103,15 @@ class LDAPMeController extends AbstractHeaderController
         $this->validatePatchData($input);
         $LdapUserGateway = new LdapUserGateway();
 
-        $ldapuser = $LdapUserGateway->fillUser($this->ldap_user->getDN());
+//        $ldapuser = $LdapUserGateway->fillUser($this->ldap_user);
         if(isset($input['password']))
         {
-            $LdapUserGateway->ChangePassword($ldapuser,$input['password']);
+            $LdapUserGateway->ChangePassword($this->ldap_user,$input['password']);
             $resp['data']['password'] = "modified";
         }
         if(isset($input['email']))
         {
-            $LdapUserGateway->ChangeEmail($ldapuser,$input['password']);
+            $LdapUserGateway->ChangeEmail($this->ldap_user,$input['password']);
             $resp['data']['email'] = "modified";
         }
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
