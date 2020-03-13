@@ -50,7 +50,7 @@ class LDAPMeController extends AbstractHeaderController
     {
         return array(
 //            'usr_id' => $user->getUsrId(),
-            'username' => $user->getDn(),
+            'dn' => $user->getDn(),
             'member_since' => $user->getMemberSince(),
             'cn' => $user->getCn(),
             "uid" => $user->getUid(),
