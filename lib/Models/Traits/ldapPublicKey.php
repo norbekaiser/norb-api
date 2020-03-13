@@ -12,23 +12,26 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
-require_once __DIR__ .'/User.php';
-require_once __DIR__ . '/Traits/PosixAccount.php';
-require_once __DIR__ . '/Traits/ldapPublicKey.php';
-
-class LDAPUser extends User
+trait ldapPublicKey
 {
-    use PosixAccount, ldapPublicKey;
+    //Optional
+    private $sshPublicKey = array();
 
-    private $DN;
-
-    public function getDN(): string
+    /**
+     * @return all public keys
+     */
+    public function getSSHPublicKeys(): array
     {
-        return $this->DN;
+        return $this->sshPublicKey;
     }
 
-    public function setDN(string $DN): void
+    /**
+     * add a public key
+     * @param string $sshPublicKey
+     */
+    public function addSSHPublicKey(string $sshPublicKey): void
     {
-        $this->DN = $DN;
+        array_push($this->sshPublicKey,$sshPublicKey);
     }
+
 }

@@ -58,6 +58,7 @@ class LDAPMeController extends AbstractHeaderController
             "gidNumber" => $user->getGidNUmber(),
             "homeDirectory" => $user->getHomeDirectory(),
             "loginShell" => $user->getLoginShell(),
+            "sshPublicKey" => $user->getSSHPublicKeys(),
         );
     }
 

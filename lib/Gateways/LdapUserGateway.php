@@ -35,7 +35,9 @@ class LdapUserGateway
 
     public function fillUser(LDAPUser $LDAPUser): LDAPUser
     {
+        //todo instead of two searches, maybe, one search and distinguish based on ldap type
         $this->fillLdapUserDataPosixAccount($LDAPUser);
+        $this->fillLdapUserDataPublicKey($LDAPUser);
         return  $LDAPUser;
     }
 
@@ -51,6 +53,19 @@ class LdapUserGateway
         if(isset($data[0]['loginshell']))
         {
             $LDAPUser->setLoginShell($data[0]['loginshell'][0]);
+        }
+    }
+
+    private function fillLdapUserDataPublicKey(LDAPUser &$LDAPUser)
+    {
+        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=ldapPublicKey");
+        $data = ldap_get_entries($this->ldap_db,$search);
+        if(isset($data[0]['sshpublickey']))
+        {
+            for($i=0;$i<$data[0]['sshpublickey']["count"];$i++)
+            {
+                $LDAPUser->addSSHPublicKey($data[0]['sshpublickey'][$i]);
+            }
         }
     }
 
