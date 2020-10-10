@@ -31,12 +31,8 @@ class AuthController extends AbstractController
         parent::__construct($requestMethod);
     }
 
-    private function Authenticate(string $username,string $password): User
+    private function AuthenticateLDAP(string $username,string $password): LDAPUser
     {
-        $user= null;
-        //Check Against LDAP
-        try
-        {
             $LdapUserGateway = new LdapUserGateway();
             $LocalUserLdapGateway = new LocalLdapUserGateway();
             $user = $LdapUserGateway->AuthenticateUser($username,$password);
@@ -47,23 +43,37 @@ class AuthController extends AbstractController
             {
                 $user = $LocalUserLdapGateway->InsertUserDN($user->getDN());
             }
-        }
-        catch (Exception $e)
-        {
+            return $user;
+    }
 
-        }
-        //Check Against Local Database
-        try
-        {
+    private function AuthenticateLocal(string $username,string $password): LocalUser
+    {
             $LocalUserGateway = new LocalUserGateway();
-            $user = $LocalUserGateway->AuthLocalUser($username,$password);
-            //check that the user locally exists, try to add him if he does not
+            $user = $LocalUserGateway->Authenticate($username,$password);
+            return $user;
+    }
+
+    private function Authenticate(string $username,string $password): User
+    {
+        $user= null;
+
+        try {
+            $user=$this->AuthenticateLDAP($username,$password);
+        }
+        catch (Exception $e)
+        {
+
+        }
+        try {
+            $user=$this->AuthenticateLocal($username,$password);
         }
         catch (Exception $e)
         {
 
         }
 
+
+        //Check Against Local Database
         if(is_null($user))
         {
             throw new Exception("Authentication Failed");

@@ -68,7 +68,7 @@ class MeController extends AbstractHeaderController
         $resp['data']['member_since'] = $this->User->getMemberSince();
         try {
             $LocalUserGateway = new LocalUserGateway();
-            $localuser = $LocalUserGateway->findUser($this->User->getUsrId());
+            $localuser = $LocalUserGateway->findUserByUsrID($this->User->getUsrId());
             $resp['data']['type'] = 'local';
             return $resp;
         }

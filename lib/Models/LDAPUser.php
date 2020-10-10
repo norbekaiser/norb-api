@@ -13,12 +13,9 @@
 ?>
 <?php
 require_once __DIR__ .'/User.php';
-require_once __DIR__ . '/Traits/PosixAccount.php';
-require_once __DIR__ . '/Traits/ldapPublicKey.php';
 
 class LDAPUser extends User
 {
-    use PosixAccount, ldapPublicKey;
 
     private $DN;
 

@@ -31,10 +31,13 @@ class LocalUserGateway
 
     }
 
-    public function findUser(int $usr_id): LocalUser
+    public function findUserByUsrID(int $usr_id): LocalUser
     {
         $query = <<<'SQL'
-            SELECT users_id.id as usr_id, users_id.member_since as member_since, users_local.username as username 
+            SELECT 
+                   users_id.id as usr_id, 
+                   users_id.member_since as member_since, 
+                   users_local.username as username 
             FROM users_local 
             INNER JOIN users_id ON users_local.usr_id = users_id.id 
             WHERE usr_id=? LIMIT 1
@@ -45,7 +48,35 @@ class LocalUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LocalUser Could not be found");
+            throw new Exception("LocalUser Could not be found By UsrID");
+        }
+        $userData = $result->fetch_assoc();
+        $LocalUser = new LocalUser();
+        $LocalUser->setUsrId($userData['usr_id']);
+        $LocalUser->setUsername($userData['username']);
+        $LocalUser->setMemberSince($userData['member_since']);
+        return $LocalUser;
+    }
+
+
+    public function findUserByUsername(string $username): LocalUser
+    {
+        $query = <<<'SQL'
+            SELECT 
+                   users_id.id as usr_id, 
+                   users_id.member_since as member_since, 
+                   users_local.username as username 
+            FROM users_local 
+            INNER JOIN users_id ON users_local.usr_id = users_id.id 
+            WHERE username=? LIMIT 1
+        SQL;
+        $stmt = $this->sql_db->prepare($query);
+        $stmt->bind_param('s',$username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result->num_rows != 1)
+        {
+            throw new Exception("LocalUser Could not be found By Username");
         }
         $userData = $result->fetch_assoc();
         $LocalUser = new LocalUser();
@@ -57,63 +88,90 @@ class LocalUserGateway
 
     public function insertLocalUser(string $username,string $password): LocalUser
     {
+        $query_insert_usr_id = <<<'SQL'
+            INSERT INTO users_id (id,member_since) VALUES (NULL,CURRENT_TIMESTAMP);
+        SQL;
+        $query_insert_local_user = <<<'SQL'
+            INSERT INTO users_local(username, usr_id, password) VALUES (?,?,?);
+        SQL;
         $LocalUser = new LocalUser();
         $LocalUser->setUsername($username);
-        $query = <<<'SQL'
-            CALL addlocaluser(?,?,@userid)
-        SQL;
-        $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('ss',$LocalUser->getUsername(),$password);
-        $stmt->execute();
-        //retrieving the user id of the newly created user
-        $query2 = <<<'SQL'
-            SELECT @userid AS usr_id
-        SQL;
-        $stmt2 = $this->sql_db->query($query2);
-        $usr_id = $stmt2->fetch_assoc();
-        if(is_null($usr_id['usr_id']))
+
+        $this->sql_db->begin_transaction();
+
+        $stmt_insert_usr_id = $this->sql_db->prepare($query_insert_usr_id);
+        $stmt_insert_local_user = $this->sql_db->prepare($query_insert_local_user);
+
+        $stmt_insert_usr_id->execute();
+        $new_user_id = $stmt_insert_usr_id->insert_id;
+        $password_hash = password_hash($password,PASSWORD_DEFAULT);
+
+
+        $stmt_insert_local_user->bind_param('sis',$username,$new_user_id,$password_hash);
+        $stmt_insert_local_user->execute();
+
+        if($stmt_insert_local_user->affected_rows !=1)
         {
+
+            $this->sql_db->rollback();
             throw new Exception("LocalUser Could not be Created");
         }
-        else
-        {
-            $LocalUser->setUsrId($usr_id['usr_id']);
+        else{
+            $this->sql_db->commit();
+            $LocalUser->setUsrId($new_user_id);
         }
         return $LocalUser;
     }
 
-    public function AuthLocalUser(string $username, string $password): LocalUser
+    public function Authenticate(string $username, string $password): LocalUser
     {
-        $query= <<<'SQL'
-            CALL users_local_authenticate(?,?)
+        $query = <<<'SQL'
+            SELECT 
+                   users_id.id as usr_id, 
+                   users_id.member_since as member_since, 
+                   users_local.username as username, 
+                   users_local.password as password
+            FROM users_local 
+            INNER JOIN users_id ON users_local.usr_id = users_id.id 
+            WHERE username=? LIMIT 1
         SQL;
         $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('ss',$username,$password);
+        $stmt->bind_param('s',$username);
         $stmt->execute();
         $result = $stmt->get_result();
-        if($result->num_rows != 1){
-            throw new Exception("Invalid Credentials");
+        if($result->num_rows != 1)
+        {
+            throw new Exception("LocalUser Could not be found By Username");
         }
         $userData = $result->fetch_assoc();
+        if(!password_verify($password,$userData['password']))
+        {
+            throw new Exception("Invalid Password");
+        }
         $LocalUser = new LocalUser();
         $LocalUser->setUsrId($userData['usr_id']);
         $LocalUser->setUsername($userData['username']);
+        $LocalUser->setMemberSince($userData['member_since']);
         return $LocalUser;
     }
 
     public function ChangePassword(LocalUser $user,string $password): void
     {
-        $query=<<<'SQL'
-            CALL users_local_change_password(?,?)
+        $query = <<<'SQL'
+            UPDATE users_local
+            INNER JOIN users_id ON users_local.usr_id = users_id.id
+            SET 
+                users_local.password =?
+            WHERE users_local.username=? LIMIT 1
         SQL;
+        $password_hash = password_hash($password,PASSWORD_DEFAULT);
         $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('ss',$user->getUsername(),$password);
+        $stmt->bind_param('ss',$password_hash,$user->getUsername());
         $stmt->execute();
-        if($stmt->affected_rows !=1)
+        if($stmt->affected_rows != 1)
         {
             throw new Exception("Password not Changed");
         }
-
     }
 
 }

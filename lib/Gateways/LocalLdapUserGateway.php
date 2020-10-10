@@ -106,28 +106,37 @@ class LocalLdapUserGateway
      */
     public function InsertUserDN(string $dn): LDAPUser
     {
+        $query_insert_usr_id = <<<'SQL'
+        INSERT INTO users_id(id,member_since) VALUES (NULL,CURRENT_TIMESTAMP);
+        SQL;
+        $query_insert_local_ldapuser = <<<'SQL'
+            INSERT INTO users_ldap(dn, usr_id) VALUES (?,?);
+        SQL;
+
         $LDAPUser = new LDAPUser();
         $LDAPUser->setDN($dn);
-        $query = <<<'SQL'
-            CALL addldapuser(?,@userid)
-        SQL;
-        $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('s',$dn);
-        $stmt->execute();
-        //retrieving the user id of the newly created user
-        $query2 = <<<'SQL'
-            SELECT @userid AS usr_id
-        SQL;
-        $stmt2 = $this->sql_db->query($query2);
-        $usr_id = $stmt2->fetch_assoc();
-        if(is_null($usr_id['usr_id']))
+
+        $this->sql_db->begin_transaction();
+
+        $stmt_insert_usr_id = $this->sql_db->prepare($query_insert_usr_id);
+        $stmt_insert_local_userldap = $this->sql_db->prepare($query_insert_local_ldapuser);
+
+        $stmt_insert_usr_id->execute();
+        $new_user_id = $stmt_insert_usr_id->insert_id;
+
+        $stmt_insert_local_userldap->bind_param('si',$LDAPUser->getDN(),$new_user_id);
+        $stmt_insert_local_userldap->execute();
+
+        if($stmt_insert_local_userldap->affected_rows !=1)
         {
-            throw new Exception("LDAPUser Could not be Created");
+            $this->sql_db->rollback();
+            throw new Exception("LocalLdap User Could not be Added");
         }
-        else
-        {
-            $LDAPUser->setUsrId($usr_id['usr_id']);
+        else{
+            $this->sql_db->commit();
+            $LDAPUser->setUsrId($new_user_id);
         }
+
         return $LDAPUser;
     }
 }

@@ -28,7 +28,7 @@ class LDAPMeController extends AbstractHeaderController
     private $ldap_user = null;
 
     /**
-     * The Me Controller qruies a session and user gateway, other gateways are used on demand
+     * The Me Controller requires a session and user gateway, other gateways are used on demand
      * MeController constructor.
      * @param string $requestMethod
      * @param string $Authorization
@@ -49,16 +49,8 @@ class LDAPMeController extends AbstractHeaderController
     private function LdapUser_data_to_resp(LDAPUser $user): array
     {
         return array(
-//            'usr_id' => $user->getUsrId(),
             'dn' => $user->getDn(),
             'member_since' => $user->getMemberSince(),
-            'cn' => $user->getCn(),
-            "uid" => $user->getUid(),
-            "uidNumber" => $user->getUidNUmber(),
-            "gidNumber" => $user->getGidNUmber(),
-            "homeDirectory" => $user->getHomeDirectory(),
-            "loginShell" => $user->getLoginShell(),
-            "sshPublicKey" => $user->getSSHPublicKeys(),
         );
     }
 
@@ -84,9 +76,9 @@ class LDAPMeController extends AbstractHeaderController
     {
         $this->require_valid_session();
         $LdapUserGateway = new LdapUserGateway();
-        $ldapuser = $LdapUserGateway->fillUser($this->ldap_user);
+        $ldapuser = $LdapUserGateway->findByDN($this->ldap_user);
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
-        $resp['data'] = $this->LdapUser_data_to_resp($ldapuser);
+        $resp['data'] = $ldapuser->getDN();
         return $resp;
     }
 
@@ -104,7 +96,6 @@ class LDAPMeController extends AbstractHeaderController
         $this->validatePatchData($input);
         $LdapUserGateway = new LdapUserGateway();
 
-//        $ldapuser = $LdapUserGateway->fillUser($this->ldap_user);
         if(isset($input['password']))
         {
             $LdapUserGateway->ChangePassword($this->ldap_user,$input['password']);
@@ -112,7 +103,7 @@ class LDAPMeController extends AbstractHeaderController
         }
         if(isset($input['email']))
         {
-            $LdapUserGateway->ChangeEmail($this->ldap_user,$input['password']);
+            $LdapUserGateway->ChangeEmail($this->ldap_user,$input['email']);
             $resp['data']['email'] = "modified";
         }
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';

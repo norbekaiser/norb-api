@@ -71,7 +71,7 @@ class LocalMeController extends AbstractHeaderController
         $this->require_valid_session();
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         $LocalUserGateway = new LocalUserGateway();
-        $localuser = $LocalUserGateway->findUser($this->User->getUsrId());
+        $localuser = $LocalUserGateway->findUserByUsrID($this->User->getUsrId());
         $resp['data'] = $this->LocalUser_data_to_resp($localuser);
         return $resp;
     }
@@ -83,7 +83,7 @@ class LocalMeController extends AbstractHeaderController
         $this->validatePatchData($input);
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';//ggf modified?
         $LocalUserGateway = new LocalUserGateway();
-        $LocalUser = $LocalUserGateway->findUser($this->User->getUsrId());
+        $LocalUser = $LocalUserGateway->findUserByUsrID($this->User->getUsrId());
         if(isset($input['password']))
         {
             $LocalUserGateway->ChangePassword($LocalUser,$input['password']);

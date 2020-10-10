@@ -18,56 +18,45 @@ require_once __DIR__ . '/../Models/LDAPUser.php';
 
 /**
  * Class LdapUserGateway
- * This Provides a Gateway to the Database Items of a LDAP user, mainly his associated internal id and his dn from the Ldap
+ * This Provides a Gateway to the LDAP
  */
 class LdapUserGateway
 {
     use LDAPGateway;
 
     /**
-     * The Gateway requires a sql and an ldap connection
-     * LdapUserGateway constructor.
+     * The Gateway requires a an ldap connection
+     *
      */
     public function __construct()
     {
         $this->init_ldap();
     }
 
-    public function fillUser(LDAPUser $LDAPUser): LDAPUser
-    {
-        //todo instead of two searches, maybe, one search and distinguish based on ldap type
-        $this->fillLdapUserDataPosixAccount($LDAPUser);
-        $this->fillLdapUserDataPublicKey($LDAPUser);
-        return  $LDAPUser;
-    }
 
-    private function fillLdapUserDataPosixAccount(LDAPUser &$LDAPUser)
+    public function findByDN(LDAPUser $LDAPUser): LDAPUser
     {
-        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=PosixAccount");
+        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=*");
         $data = ldap_get_entries($this->ldap_db,$search);
-        $LDAPUser->setCn($data[0]['cn'][0]);
-        $LDAPUser->setUid($data[0]['uid'][0]);
-        $LDAPUser->setGidNUmber($data[0]['gidnumber'][0]);
-        $LDAPUser->setUidNUmber($data[0]['uidnumber'][0]);
-        $LDAPUser->setHomeDirectory($data[0]['homedirectory'][0]);
-        if(isset($data[0]['loginshell']))
-        {
-            $LDAPUser->setLoginShell($data[0]['loginshell'][0]);
+        if($data["count"]==0){
+            throw new Exception("No User with this DN could be found");
         }
+        $LDAPUser->setDN($data[0]['dn']);
+        return $LDAPUser;
     }
-
-    private function fillLdapUserDataPublicKey(LDAPUser &$LDAPUser)
-    {
-        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=ldapPublicKey");
-        $data = ldap_get_entries($this->ldap_db,$search);
-        if(isset($data[0]['sshpublickey']))
-        {
-            for($i=0;$i<$data[0]['sshpublickey']["count"];$i++)
-            {
-                $LDAPUser->addSSHPublicKey($data[0]['sshpublickey'][$i]);
-            }
-        }
-    }
+//
+//    private function fillLdapUserDataPublicKey(LDAPUser &$LDAPUser)
+//    {
+//        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=ldapPublicKey");
+//        $data = ldap_get_entries($this->ldap_db,$search);
+//        if(isset($data[0]['sshpublickey']))
+//        {
+//            for($i=0;$i<$data[0]['sshpublickey']["count"];$i++)
+//            {
+//                $LDAPUser->addSSHPublicKey($data[0]['sshpublickey'][$i]);
+//            }
+//        }
+//    }
 
     /**
      * Authenticates a user against the LDAP DB, if no mapping exists locally, it is tried to be added
@@ -87,8 +76,7 @@ class LdapUserGateway
         }
         $LDAPUser = new LDAPUser();
         $LDAPUser->setDN($ldap_username);
-        //todo fill with data?
-        //Check If User Exists
+
         return $LDAPUser;
     }
 
