@@ -2,6 +2,7 @@
 
 A Basic but expandable Api Framework, which I intent to use for more than one project
 but mainly for restful webservices
+it also provides a user backend which can be used or ignored
 
 An Example Project Using Norb-api will follow
 
@@ -11,7 +12,7 @@ An Example Project Using Norb-api will follow
  * LDAP Authentication
  * Redis Session
  * Google Recaptcha Support
- 
+ * Gateways to SQL and LDAP
 ## In Development
  * 2FA
 
