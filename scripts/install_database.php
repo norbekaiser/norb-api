@@ -16,6 +16,8 @@
 require_once __DIR__ . '/../lib/Config/SQLConfig.php';
 require_once __DIR__ . '/../lib/Connectors/DatabaseConnectorSQL.php';
 
+$return=0;
+
 function run_query(databaseConnectorSQL $dbcon,$filename){
     echo "--------------------\n";
     $query= file_get_contents($filename,false);
@@ -27,6 +29,7 @@ function run_query(databaseConnectorSQL $dbcon,$filename){
     }
     else{
         echo "\nFailed\n";
+        $return=1;
     }
     echo "--------------------\n";
 }
@@ -42,3 +45,6 @@ run_query($DBCSQL,__DIR__.'/../SQL/users_ldap.sql');
 echo "Installing Local User Table\n";
 run_query($DBCSQL,__DIR__.'/../SQL/users_local.sql');
 echo "Finished Database Initialization\n";
+
+exit($return);
+
