@@ -1,4 +1,5 @@
 [database]
+# If localhost is specified as Hostname, php will default to unix socket instead of a tcp connection, use ::1 or 127.0.0.1 instead
 Hostname = localhost
 Port = 3306
 Name = database
