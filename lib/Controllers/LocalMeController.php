@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ . '/AbstractHeaderController.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
@@ -20,6 +23,15 @@ require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
+
+
+use norb_api\Gateways\UserGateway;
+use norb_api\Gateways\LocalUserGateway;
+use norb_api\Gateways\SessionGateway;
+use norb_api\Models\LocalUser;
+use norb_api\Exceptions\HTTP400_BadRequest;
+use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Config\RegistrationConfig;
 
 class LocalMeController extends AbstractHeaderController
 {
@@ -103,7 +115,7 @@ class LocalMeController extends AbstractHeaderController
             $session->getUsrId();
             $this->User = $this->UserGateway->findUser($session->getUsrId());
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $this->User = null;
         }
@@ -117,22 +129,21 @@ class LocalMeController extends AbstractHeaderController
         if(isset($input['password']))
         {
             /** password must be at least 8 letters long */
-            if(strlen($input['password']) < $RegistrationConfig->getMinLength())
+            if(strlen($input['password']) < $RegistrationConfig->getMinimumLength())
             {
 
-                throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+                throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinimumLength()." Characters");
             }
 
-            if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
+            if($RegistrationConfig->getRequiresLetters() && !(preg_match('[\D]',$input['password'])))
             {
                 throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
             }
 
-            if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
+            if($RegistrationConfig->getRequiresDigits() && !(preg_match('[\d]',$input['password'])))
             {
                 throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
             }
         }
-
     }
 }

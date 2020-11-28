@@ -12,21 +12,25 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Config;
+
 require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/Traits/Hostname.php';
+require_once __DIR__ . '/Traits/Password.php';
+require_once __DIR__ . '/Traits/Port.php';
+require_once __DIR__ . '/Traits/DatabaseID.php';
 
 class RedisConfig extends Config
 {
-    private $hostname;
-    private $port;
-    private $password;
-    private $database_id;
+    use Hostname, Password, Port, DatabaseID;
 
     public function __construct()
     {
-        $this->hostname = 'localhost';
-        $this->port = 6379;
-        $this->password ='';
-        $this->database_id = 0;
+        $this->Hostname = 'localhost';
+        $this->Port = 6379;
+        $this->Password ='';
+        $this->DatabaseID = 0;
         parent::__construct(__DIR__ . '/../../config/redis.ini');
     }
 
@@ -34,42 +38,19 @@ class RedisConfig extends Config
     {
         if(is_string($ini_data['Hostname']))
         {
-            $this->hostname = (string) $ini_data['Hostname'];
+            $this->Hostname = (string) $ini_data['Hostname'];
         }
-
         if(is_numeric($ini_data['Port']))
         {
-            $this->port = (int) $ini_data['Port'];
+            $this->Port = (int) $ini_data['Port'];
         }
-
         if(is_string($ini_data['Password']))
         {
-            $this->password = (string) $ini_data['Password'];
+            $this->Password = (string) $ini_data['Password'];
         }
-
         if(is_numeric($ini_data['DatabaseID']))
         {
-            $this->database_id = (int) $ini_data['DatabaseID'];
+            $this->DatabaseID = (int) $ini_data['DatabaseID'];
         }
-    }
-
-    public function getHostname(): string
-    {
-        return $this->hostname;
-    }
-
-    public function getPort(): int
-    {
-        return $this->port;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
-    }
-
-    public function getDatabaseId(): int
-    {
-        return $this->database_id;
     }
 }

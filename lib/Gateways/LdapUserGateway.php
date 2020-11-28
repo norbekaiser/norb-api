@@ -12,9 +12,15 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/Traits/SQLGateway.php';
 require_once __DIR__ . '/Traits/LDAPGateway.php';
 require_once __DIR__ . '/../Models/LDAPUser.php';
+
+use norb_api\Models\LDAPUser;
+use norb_api\Config\LDAPConfig;
 
 /**
  * Class LdapUserGateway
@@ -39,32 +45,12 @@ class LdapUserGateway
         $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=*");
         $data = ldap_get_entries($this->ldap_db,$search);
         if($data["count"]==0){
-            throw new Exception("No User with this DN could be found");
+            throw new \Exception("No User with this DN could be found");
         }
         $LDAPUser->setDN($data[0]['dn']);
         return $LDAPUser;
     }
-//
-//    private function fillLdapUserDataPublicKey(LDAPUser &$LDAPUser)
-//    {
-//        $search = ldap_read($this->ldap_db,$LDAPUser->getDN(),"objectClass=ldapPublicKey");
-//        $data = ldap_get_entries($this->ldap_db,$search);
-//        if(isset($data[0]['sshpublickey']))
-//        {
-//            for($i=0;$i<$data[0]['sshpublickey']["count"];$i++)
-//            {
-//                $LDAPUser->addSSHPublicKey($data[0]['sshpublickey'][$i]);
-//            }
-//        }
-//    }
 
-    /**
-     * Authenticates a user against the LDAP DB, if no mapping exists locally, it is tried to be added
-     * @param $username
-     * @param $password
-     * @return LDAPUser
-     * @throws Exception
-     */
     public function AuthenticateUser($username,$password): LDAPUser
     {
         $ldap_config = new LDAPConfig();
@@ -72,7 +58,7 @@ class LdapUserGateway
         $authenticated = @ldap_bind($this->ldap_db,$ldap_username,$password);
         if(!$authenticated)
         {
-            throw new Exception("Could not Authenticate against LDAP");
+            throw new \Exception("Could not Authenticate against LDAP");
         }
         $LDAPUser = new LDAPUser();
         $LDAPUser->setDN($ldap_username);
@@ -86,7 +72,7 @@ class LdapUserGateway
         $values["userPassword"] = "{CRYPT}".crypt($password,'$6$'.$salt);
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
-            throw new Exception("Could not Modify Password");
+            throw new \Exception("Could not Modify Password");
         }
     }
 
@@ -96,7 +82,7 @@ class LdapUserGateway
         $values["email"] = $email;
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
-            throw new Exception("Could not Modify Email");
+            throw new \Exception("Could not Modify Email");
         }
     }
 }

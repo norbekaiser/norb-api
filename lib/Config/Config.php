@@ -13,6 +13,7 @@
 ?>
 <?php
 
+namespace norb_api\Config;
 
 abstract class Config
 {
@@ -20,10 +21,10 @@ abstract class Config
     public function __construct($filename)
     {
         $values = @parse_ini_file($filename,false,INI_SCANNER_TYPED);
-        if($values){
+        if($values)
+        {
             $this->parse_file($values);
         }
-
     }
 
     protected abstract function parse_file($ini_data);

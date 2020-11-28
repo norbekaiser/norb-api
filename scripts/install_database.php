@@ -16,9 +16,12 @@
 require_once __DIR__ . '/../lib/Config/SQLConfig.php';
 require_once __DIR__ . '/../lib/Connectors/DatabaseConnectorSQL.php';
 
+use norb_api\Connectors\DatabaseConnectorSQL;
+use norb_api\Config\SQLConfig;
+
 $return=0;
 
-function run_query(databaseConnectorSQL $dbcon,$filename){
+function run_query(DatabaseConnectorSQL $dbcon,$filename){
     echo "--------------------\n";
     $query= file_get_contents($filename,false);
     echo "Running the Following Query:\n";
@@ -36,7 +39,7 @@ function run_query(databaseConnectorSQL $dbcon,$filename){
 
 echo "Running Database Install Script\n";
 echo "Connecting to Database\n";
-$DBCSQL = new databaseConnectorSQL(new SQLConfig());
+$DBCSQL = new DatabaseConnectorSQL(new SQLConfig());
 
 echo "Installing User ID\n";
 run_query($DBCSQL,__DIR__.'/../SQL/users_id.sql');

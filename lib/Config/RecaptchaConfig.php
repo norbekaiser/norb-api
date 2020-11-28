@@ -12,19 +12,23 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Config;
+
 require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/Traits/Enabled.php';
+require_once __DIR__ . '/Traits/Version.php';
+require_once __DIR__ . '/Traits/SecretKey';
 
 class RecaptchaConfig extends Config
 {
-    private $enabled;
-    private $version;
-    private $secretkey;
+    use Enabled, Version, SecretKey;
 
     public function __construct()
     {
-        $this->enabled = false;
-        $this->version = 2;
-        $this->secretkey ="";
+        $this->Enabled = false;
+        $this->Version = 2;
+        $this->SecretKey ="";
         parent::__construct(__DIR__ . '/../../config/recaptcha.ini');
     }
 
@@ -32,31 +36,16 @@ class RecaptchaConfig extends Config
     {
         if(is_bool($ini_data['Enabled']))
         {
-            $this->enabled = (bool)$ini_data['Enabled'];
+            $this->Enabled = (bool) $ini_data['Enabled'];
         }
 
         if(is_numeric($ini_data['Version']))
         {
-            $this->version = (int) $ini_data['Version'];
+            $this->Version = (int) $ini_data['Version'];
         }
         if(is_string($ini_data['SecretKey']))
         {
-            $this->secretkey = (string) $ini_data['SecretKey'];
+            $this->SecretKey = (string) $ini_data['SecretKey'];
         }
-    }
-
-    public function getEnabled(): bool
-    {
-        return $this->enabled;
-    }
-
-    public function getVersion(): int
-    {
-        return $this->version;
-    }
-
-    public function getSecretkey(): string
-    {
-        return $this->secretkey;
     }
 }

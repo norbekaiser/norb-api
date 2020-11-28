@@ -12,26 +12,15 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
-trait ldapPublicKey
+
+namespace norb_api\Config;
+
+trait Hostname
 {
-    //Optional
-    private $sshPublicKey = array();
+    private $Hostname;
 
-    /**
-     * @return all public keys
-     */
-    public function getSSHPublicKeys(): array
+    public function getHostname(): string
     {
-        return $this->sshPublicKey;
+        return $this->Hostname;
     }
-
-    /**
-     * add a public key
-     * @param string $sshPublicKey
-     */
-    public function addSSHPublicKey(string $sshPublicKey): void
-    {
-        array_push($this->sshPublicKey,$sshPublicKey);
-    }
-
 }

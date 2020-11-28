@@ -12,10 +12,14 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/Traits/RedisGateway.php';
 require_once __DIR__ . '/../Models/Session.php';
 
-//use model\Session;
+use norb_api\Models\Session;
+use norb_api\Models\User;
 
 class SessionGateway
 {
@@ -27,7 +31,7 @@ class SessionGateway
     {
         $this->init_redis();
         $this->random_bytes_length=64;
-        $this->prefix ="session";
+//        $this->prefix ="session";
 
     }
 
@@ -36,7 +40,7 @@ class SessionGateway
         $res = $this->redis_db->hGetAll($sessionToken);
         if(!$res)
         {
-            throw new Exception("Session not Found");
+            throw new \Exception("Session not Found");
         }
         $session = new Session();
         $session->setUsrId($res['usr_id']);

@@ -4,3 +4,4 @@ Port = 3306
 Name = database
 Username = user
 Password = password
+Socket = /var/run/mysqld/mysqld.sock

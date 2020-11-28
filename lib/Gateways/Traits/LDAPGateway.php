@@ -12,8 +12,14 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/../../Config/LDAPConfig.php';
 require_once __DIR__ . '/../../Connectors/DatabaseConnectorLDAP.php';
+
+use norb_api\Config\LDAPConfig;
+use norb_api\Connectors\DatabaseConnectorLDAP;
 
 /**
  * Trait LDAPGateway

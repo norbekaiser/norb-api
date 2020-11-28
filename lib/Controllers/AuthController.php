@@ -12,15 +12,33 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ . '/AbstractController.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
+require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
-require_once __DIR__ . '/../recaptcha/recaptcha_validator.php';
+
+
+use norb_api\Gateways\LocalUserGateway;
+use norb_api\Gateways\LdapUserGateway;
+use norb_api\Gateways\LocalLdapUserGateway;
+use norb_api\Gateways\SessionGateway;
+use norb_api\Gateways\RecaptchaV2Gateway;
+use norb_api\Gateways\RecaptchaV3Gateway;
+use norb_api\Models\User;
+use norb_api\Models\LocalUser;
+use norb_api\Models\LDAPUser;
+use norb_api\Exceptions\HTTP_Exception;
+use norb_api\Exceptions\HTTP400_BadRequest;
+use norb_api\Exceptions\HTTP422_UnprocessableEntity;
+use norb_api\Config\RecaptchaConfig;
 
 class AuthController extends AbstractController
 {
@@ -39,7 +57,7 @@ class AuthController extends AbstractController
             try{
                 $user = $LocalUserLdapGateway->findUserDN($user->getDN());
             }
-            catch (Exception $e)
+            catch (\Exception $e)
             {
                 $user = $LocalUserLdapGateway->InsertUserDN($user->getDN());
             }
@@ -60,14 +78,14 @@ class AuthController extends AbstractController
         try {
             $user=$this->AuthenticateLDAP($username,$password);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
 
         }
         try {
             $user=$this->AuthenticateLocal($username,$password);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
 
         }
@@ -76,7 +94,7 @@ class AuthController extends AbstractController
         //Check Against Local Database
         if(is_null($user))
         {
-            throw new Exception("Authentication Failed");
+            throw new \Exception("Authentication Failed");
         }
         return $user;
     }
@@ -93,7 +111,7 @@ class AuthController extends AbstractController
         {
             throw $e;
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             throw new HTTP422_UnprocessableEntity($e->getMessage());
         }
@@ -130,8 +148,16 @@ class AuthController extends AbstractController
 
         if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==2)
         {
-            $captcha = new recaptcha_validator($CaptchaConfig);
+            $captcha = new RecaptchaV2Gateway();
             if(! ($captcha->verify($input['g_recaptcha_response'])))
+            {
+                throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
+            }
+        }
+        else if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==3)
+        {
+            $captcha = new RecaptchaV3Gateway();
+            if(! (($captcha->verify($input['g_recaptcha_response']))>=0.5) )
             {
                 throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
             }

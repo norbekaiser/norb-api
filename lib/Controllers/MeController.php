@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ . '/AbstractHeaderController.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
@@ -22,10 +25,17 @@ require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
 
+use norb_api\Gateways\UserGateway;
+use norb_api\Gateways\LocalUserGateway;
+use norb_api\Gateways\LocalLdapUserGateway;
+use norb_api\Gateways\SessionGateway;
+use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Exceptions\HTTP422_UnprocessableEntity;
+
 class MeController extends AbstractHeaderController
 {
     private $UserGateway = null;
-    private $sessionGateway = null;
+    private $SessionGateway = null;
     private $User = null;
 
     /**
@@ -37,8 +47,9 @@ class MeController extends AbstractHeaderController
     public function __construct(string $requestMethod,string $Authorization)
     {
 
-        $this->sessionGateway = new SessionGateway();
+
         $this->UserGateway = new UserGateway();
+        $this->SessionGateway = new SessionGateway();
         parent::__construct($requestMethod,$Authorization);
     }
 
@@ -72,14 +83,14 @@ class MeController extends AbstractHeaderController
             $resp['data']['type'] = 'local';
             return $resp;
         }
-        catch (Exception $e){}
+        catch (\Exception $e){}
         try {
             $LocalLdapUserGateway = new LocalLdapUserGateway();
             $ldapuser = $LocalLdapUserGateway->findUserID($this->User->getUsrId());
             $resp['data']['type'] = 'ldap';
             return $resp;
         }
-        catch (Exception $e){}
+        catch (\Exception $e){}
         throw new HTTP422_UnprocessableEntity();
     }
 
@@ -91,11 +102,11 @@ class MeController extends AbstractHeaderController
     {
         try
         {
-            $session = $this->sessionGateway->find_session($this->Authorization);
+            $session = $this->SessionGateway->find_session($this->Authorization);
             $session->getUsrId();
             $this->User = $this->UserGateway->findUser($session->getUsrId());
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             //to reduce cors problems acl is determined in the request
             $this->User = null;

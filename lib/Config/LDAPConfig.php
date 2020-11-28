@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Config;
+
 require_once __DIR__ . '/Config.php';
 require_once __DIR__ . '/Traits/Enabled.php';
 require_once __DIR__ . '/Traits/URI.php';
@@ -23,7 +26,7 @@ require_once __DIR__ . '/Traits/BaseDN.php';
 
 class LDAPConfig extends Config
 {
-    use Enabled, URI, port, AdminDN, AdminPassword, BaseDN;
+    use Enabled, URI, Port, AdminDN, AdminPassword, BaseDN;
 
     public function __construct()
     {
@@ -38,33 +41,29 @@ class LDAPConfig extends Config
 
     public function parse_file($ini_data)
     {
-        if(is_bool($ini_data['enabled'])){
+        if(is_bool($ini_data['enabled']))
+        {
             $this->Enabled = (bool) $ini_data['enabled'];
         }
         if(is_string($ini_data['uri']))
         {
-            $this->URI = (string)$ini_data['uri'];
+            $this->URI = (string) $ini_data['uri'];
         }
         if(is_int($ini_data['port']))
         {
-            $this->Port = abs((int)$ini_data['port']);
+            $this->Port = abs((int) $ini_data['port']);
         }
         if(is_string($ini_data['admin_dn']))
         {
-            $this->AdminDN = (string)$ini_data['admin_dn'];
+            $this->AdminDN = (string) $ini_data['admin_dn'];
         }
         if(is_string($ini_data['admin_pw']))
         {
-            $this->AdminPassword = (string)$ini_data['admin_pw'];
+            $this->AdminPassword = (string) $ini_data['admin_pw'];
         }
         if(is_string($ini_data['base_dn']))
         {
-            $this->BaseDN = (string)$ini_data['base_dn'];
+            $this->BaseDN = (string) $ini_data['base_dn'];
         }
     }
-
-
-
-
-
 }

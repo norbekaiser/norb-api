@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Models;
+
 require_once __DIR__ .'/User.php';
 
 class LDAPUser extends User

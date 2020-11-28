@@ -13,7 +13,9 @@
 ?>
 <?php
 
-abstract class HTTP_Exception extends Exception
+namespace norb_api\Exceptions;
+
+abstract class HTTP_Exception extends \Exception
 {
     protected $status_code_header;
     public function __construct(string $message)

@@ -12,21 +12,25 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Config;
+
 require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/Traits/Enabled.php';
+require_once __DIR__ . '/Traits/MinimumLength.php';
+require_once __DIR__ . '/Traits/RequiresLetters.php';
+require_once __DIR__ . '/Traits/RequiresDigits.php';
 
 class RegistrationConfig extends Config
 {
-    private $enabled;
-    private $min_length;
-    private $letters;
-    private $digits;
+    use Enabled, MinimumLength, RequiresLetters, RequiresDigits;
 
     public function __construct()
     {
-        $this->enabled = false;
-        $this->min_length = 8;
-        $this->letters = true;
-        $this->digits = true;
+        $this->Enabled = false;
+        $this->MinimumLength = 8;
+        $this->RequiresLetters = true;
+        $this->RequiresDigits = true;
         parent::__construct(__DIR__ . '/../../config/registration.ini');
     }
 
@@ -34,42 +38,19 @@ class RegistrationConfig extends Config
     {
         if(is_bool($ini_data['Enabled']))
         {
-            $this->enabled = (bool)$ini_data['Enabled'];
+            $this->Enabled = (bool) $ini_data['Enabled'];
         }
-
         if(is_numeric($ini_data['MinLength']))
         {
-            $this->min_length = abs((int)$ini_data['MinLength']);
+            $this->MinimumLength = abs((int) $ini_data['MinLength']);
         }
-
         if(is_bool($ini_data['Letters']))
         {
-            $this->letters = (bool)$ini_data['Letters'];
+            $this->RequiresLetters = (bool) $ini_data['Letters'];
         }
-
         if(is_bool($ini_data['Digits']))
         {
-            $this->digits = (bool)$ini_data['Digits'];
+            $this->RequiresDigits = (bool) $ini_data['Digits'];
         }
-    }
-
-    public function getEnabled(): bool
-    {
-        return $this->enabled;
-    }
-
-    public function getMinLength(): int
-    {
-        return $this->min_length;
-    }
-
-    public function getLetters(): bool
-    {
-        return $this->letters;
-    }
-
-    public function getDigits(): bool
-    {
-        return $this->digits;
     }
 }

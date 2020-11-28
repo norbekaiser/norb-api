@@ -12,8 +12,13 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\CommonGatewayInterfaces;
+
 require_once __DIR__ . '/AuthorizingAbstractCGI.php';
 require_once __DIR__ . '/../Controllers/LDAPMeController.php';
+
+use norb_api\Controllers\LDAPMeController;
 
 class CGI_LDAPme extends AuthorizingAbstractCGI
 {

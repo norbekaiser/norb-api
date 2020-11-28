@@ -12,11 +12,17 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Connectors;
+
 require_once __DIR__ . '/DatabaseConnector.php';
 require_once __DIR__ . '/../Config/SQLConfig.php';
 require_once __DIR__ . '/../Exceptions/NoConnectivitySQL.php';
 
-class databaseConnectorSQL extends databaseConnector
+use norb_api\Config\SQLConfig;
+use norb_api\Exceptions\NoConnectivitySQL;
+
+class DatabaseConnectorSQL extends DatabaseConnector
 {
     private $connection = null;
 
@@ -26,9 +32,9 @@ class databaseConnectorSQL extends databaseConnector
         {
             $this->connection = mysqli_init();
 //            $mysqli->options();
-            $this->connection->real_connect($config->getHostname(),$config->getUsername(),$config->getPassword(),$config->getDatabaseName(),$config->getPort(),null,MYSQLI_CLIENT_FOUND_ROWS);
+            $this->connection->real_connect($config->getHostname(),$config->getUsername(),$config->getPassword(),$config->getDatabaseName(),$config->getPort(),$config->getUnixSocket(),MYSQLI_CLIENT_FOUND_ROWS);
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             throw new NoConnectivitySQL();
         }
@@ -42,7 +48,7 @@ class databaseConnectorSQL extends databaseConnector
         }
     }
 
-    public function getConnection()
+    public function getConnection(): \mysqli
     {
          return $this->connection;
     }

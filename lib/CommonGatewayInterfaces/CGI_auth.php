@@ -12,8 +12,13 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\CommonGatewayInterfaces;
+
 require_once __DIR__ . '/AbstractCGI.php';
 require_once __DIR__ . '/../Controllers/AuthController.php';
+
+use norb_api\Controllers\AuthController;
 
 class CGI_auth extends AbstractCGI
 {

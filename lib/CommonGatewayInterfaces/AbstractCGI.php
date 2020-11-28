@@ -13,6 +13,14 @@
 ?>
 <?php
 
+namespace norb_api\CommonGatewayInterfaces;
+
+require_once __DIR__ . '/../Exceptions/HTTP_Exception.php';
+require_once __DIR__ . '/../Exceptions/Database_Exception.php';
+
+use norb_api\Exceptions\HTTP_Exception;
+use norb_api\Exceptions\Database_Exception;
+
 abstract class AbstractCGI
 {
     protected $resp = null;

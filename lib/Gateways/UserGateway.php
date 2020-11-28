@@ -12,8 +12,13 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/Traits/SQLGateway.php';
 require_once __DIR__ . '/../Models/LocalUser.php';
+
+use norb_api\Models\User;
 
 /**
  * Class UserGateway
@@ -23,12 +28,19 @@ class UserGateway
 {
     use SQLGateway;
 
-
     public function __construct()
     {
         $this->init_sql();
     }
 
+    private function result_to_User(\mysqli_result $result): User
+    {
+        $userData = $result->fetch_assoc();
+        $User = new User();
+        $User->setUsrId((int) $userData['id']);
+        $User->setMemberSince($userData['member_since']);
+        return $User;
+    }
 
     public function findUser($usr_id): User
     {
@@ -43,13 +55,10 @@ class UserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("User Could not be found");
+            throw new  \Exception("User Could not be found");
         }
-        $userData = $result->fetch_assoc();
-        $User = new User();
-        $User->setUsrId($userData['id']);
-        $User->setMemberSince($userData['member_since']);
-        return $User;
+        $res = $this->result_to_User($result);
+        return $res;
     }
 
 

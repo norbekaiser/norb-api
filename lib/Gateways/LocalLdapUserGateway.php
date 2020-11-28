@@ -12,9 +12,14 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/Traits/SQLGateway.php';
 require_once __DIR__ . '/Traits/LDAPGateway.php';
 require_once __DIR__ . '/../Models/LDAPUser.php';
+
+use norb_api\Models\LDAPUser;
 
 /**
  * Class LocalLdapUserGateway
@@ -33,16 +38,11 @@ class LocalLdapUserGateway
         $this->init_sql();
     }
 
-    /**
-     * Helper Function used to map mysqli results to the result
-     * @param mysqli_result $result
-     * @return LDAPUser
-     */
-    private function result_to_LDAPUser(mysqli_result $result) :LDAPUser
+    private function result_to_LDAPUser(\mysqli_result $result) :LDAPUser
     {
         $userData = $result->fetch_assoc();
         $LDAPUser = new LDAPUser();
-        $LDAPUser->setUsrId($userData['usr_id']);
+        $LDAPUser->setUsrId((int) $userData['usr_id']);
         $LDAPUser->setMemberSince($userData['member_since']);
         $LDAPUser->setDN($userData['dn']);
         return $LDAPUser;
@@ -64,7 +64,7 @@ class LocalLdapUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LDAPUser Could not be found");
+            throw new \Exception("LDAPUser Could not be found");
         }
         $res =  $this->result_to_LDAPUser($result);
         return $res;
@@ -74,7 +74,7 @@ class LocalLdapUserGateway
      * Finds a Ldap User in the Local Table, he will be there if he has once used the service
      * @param string $dn
      * @return LDAPUser
-     * @throws Exception
+     * @throws \Exception
      */
     public function findUserDN(string $dn): LDAPUser
     {
@@ -92,7 +92,7 @@ class LocalLdapUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LDAPUser Could not be found");
+            throw new \Exception("LDAPUser Could not be found");
         }
         $res =  $this->result_to_LDAPUser($result);
         return $res;
@@ -102,7 +102,7 @@ class LocalLdapUserGateway
      * Inserts a DN into the local table
      * @param string $dn
      * @return LDAPUser
-     * @throws Exception
+     * @throws \Exception
      */
     public function InsertUserDN(string $dn): LDAPUser
     {
@@ -130,7 +130,7 @@ class LocalLdapUserGateway
         if($stmt_insert_local_userldap->affected_rows !=1)
         {
             $this->sql_db->rollback();
-            throw new Exception("LocalLdap User Could not be Added");
+            throw new \Exception("LocalLdap User Could not be Added");
         }
         else{
             $this->sql_db->commit();

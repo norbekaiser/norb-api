@@ -13,6 +13,8 @@
 ?>
 <?php
 
+namespace norb_api\Models;
+
 class Session
 {
 

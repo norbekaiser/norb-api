@@ -12,42 +12,38 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
-require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 
-class recaptcha_validator
+namespace norb_api\Gateways;
+
+require_once __DIR__ . './Traits/RecaptchaGateway.php';
+
+class RecaptchaV2Gateway
 {
-    private $url;
-    private $secretkey;
+    use RecaptchaGateway;
 
-    public function __construct(RecaptchaConfig $config)
+    public function __construct()
     {
-        $this->url = 'https://www.google.com/recaptcha/api/siteverify';
-        $this->secretkey = $config->getSecretkey();
+        $this->init_recaptcha();
+        if($this->Version!=2)
+        {
+            throw new \Exception("RecaptchaV2 Gateway Initiated but different Version required");
+        }
     }
 
     /**
-     * Verifies a Google Recaptcha REsponse
+     * Verifies a Google RecaptchaV2 Response
      */
     public function verify(string $g_recaptcha_response) : bool
     {
         $data = array(
-            'secret' => urlencode($this->secretkey),
+            'secret' => urlencode($this->SecretKey),
             'response' => urlencode($g_recaptcha_response)
         );
-
-        $curl = curl_init($this->url);
-        curl_setopt($curl,CURLOPT_URL,$this->url);
-        curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,1);
-        curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
-        curl_setopt($curl,CURLOPT_POST,true);
-        curl_setopt($curl,CURLOPT_POSTFIELDS,http_build_query($data));
-        curl_setopt($curl,CURLOPT_FOLLOWLOCATION,false);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($curl);
-        if(curl_getinfo($curl,CURLINFO_HTTP_CODE)!=200)
+        \curl_setopt($this->curl,CURLOPT_POSTFIELDS,http_build_query($data));
+        $response = \curl_exec($this->curl);
+        if(\curl_getinfo($this->curl,CURLINFO_HTTP_CODE)!=200)
         {
-            // technisch gesehen keine ahnung was passiert is, allerdings dann is es halt automatisch falsch
-            return false;
+            return false;//TODO make it an exception maybe
         }
         $responseData = json_decode($response,true);
         if($responseData["success"])

@@ -12,11 +12,17 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Connectors;
+
 require_once __DIR__ . '/DatabaseConnector.php';
 require_once __DIR__ . '/../Config/RedisConfig.php';
 require_once __DIR__ . '/../Exceptions/NoConnectivityRedis.php';
 
-class databaseConnectorRedis extends databaseConnector
+use norb_api\Config\RedisConfig;
+use norb_api\Exceptions\NoConnectivityRedis;
+
+class DatabaseConnectorRedis extends DatabaseConnector
 {
     private $redis = null;
 
@@ -24,7 +30,7 @@ class databaseConnectorRedis extends databaseConnector
     {
         try
         {
-            $this->redis = new Redis();//not quite sure if it throws or what redis connect does
+            $this->redis = new \Redis();//not quite sure if it throws or what redis connect does
             $this->redis->connect($config->getHostname(),$config->getPort());
             if(!empty($config->getPassword()))
             {
@@ -32,7 +38,7 @@ class databaseConnectorRedis extends databaseConnector
             }
             $this->redis->select($config->getDatabaseId());
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             throw new NoConnectivityRedis();
         }

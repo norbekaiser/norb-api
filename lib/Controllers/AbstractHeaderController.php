@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ .'/AbstractController.php';
 
 abstract class AbstractHeaderController extends AbstractController

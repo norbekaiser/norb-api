@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ . '/AbstractController.php';
 require_once __DIR__ .'/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ .'/../Exceptions/HTTP422_UnprocessableEntity.php';
@@ -19,6 +22,15 @@ require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
 require_once __DIR__ . '/../recaptcha/recaptcha_validator.php';
+
+use norb_api\Exceptions\HTTP_Exception;
+use norb_api\Exceptions\HTTP422_UnprocessableEntity;
+use norb_api\Exceptions\HTTP400_BadRequest;
+use norb_api\Gateways\LocalUserGateway;
+use norb_api\Gateways\RecaptchaV2Gateway;
+use norb_api\Gateways\RecaptchaV3Gateway;
+use norb_api\Config\RecaptchaConfig;
+use norb_api\Config\RegistrationConfig;
 
 class RegisterController extends AbstractController
 {
@@ -46,7 +58,7 @@ class RegisterController extends AbstractController
         {
             throw $e;
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             throw new HTTP422_UnprocessableEntity($e->getMessage());
         }
@@ -83,28 +95,36 @@ class RegisterController extends AbstractController
         }
 
         /** password must be at least 8 letters long */
-        if(strlen($input['password']) < $RegistrationConfig->getMinLength())
+        if(strlen($input['password']) < $RegistrationConfig->getMinimumLength())
         {
 
-            throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinLength()." Characters");
+            throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinimumLength()." Characters");
         }
 
-        if($RegistrationConfig->getLetters() && !(preg_match('[\D]',$input['password'])))
+        if($RegistrationConfig->getRequiresLetters() && !(preg_match('[\D]',$input['password'])))
         {
             throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
         }
 
-        if($RegistrationConfig->getDigits() && !(preg_match('[\d]',$input['password'])))
+        if($RegistrationConfig->getRequiresDigits() && !(preg_match('[\d]',$input['password'])))
         {
             throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
         }
         /** Verifying Google Recaptcha */
         if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==2)
         {
-            $captcha = new recaptcha_validator($CaptchaConfig);
+            $captcha = new RecaptchaV2Gateway();
             if(! ($captcha->verify($input['g_recaptcha_response'])))
             {
-                throw new HTTP422_UnprocessableEntity("Recaptcha Failed");
+                throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
+            }
+        }
+        else if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==3)
+        {
+            $captcha = new RecaptchaV3Gateway();
+            if(! (($captcha->verify($input['g_recaptcha_response']))>=0.5) )
+            {
+                throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
             }
         }
     }

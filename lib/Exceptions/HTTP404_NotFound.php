@@ -12,6 +12,9 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Exceptions;
+
 require_once __DIR__ .'/HTTP_Exception.php';
 
 class HTTP404_NotFound extends HTTP_Exception

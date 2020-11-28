@@ -13,20 +13,14 @@
 ?>
 <?php
 
-namespace norb_api\CommonGatewayInterfaces;
+namespace norb_api\Config;
 
-require_once __DIR__ . '/AbstractCGI.php';
-require_once __DIR__ . '/../Controllers/AuthController.php';
-
-class CGI_2fa extends AbstractCGI
+trait DatabaseName
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    private $DatabaseName;
 
-    public function processRequest()
+    public function getDatabaseName(): string
     {
-
+        return $this->DatabaseName;
     }
 }

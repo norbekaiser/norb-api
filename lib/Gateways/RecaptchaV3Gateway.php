@@ -13,34 +13,46 @@
 ?>
 <?php
 
-namespace norb_api\CommonGatewayInterfaces;
+namespace norb_api\Gateways;
 
-require_once __DIR__ . '/AbstractCGI.php';
+require_once __DIR__ . './Traits/RecaptchaGateway.php';
 
-abstract class AuthorizingAbstractCGI extends AbstractCGI
+class RecaptchaV3Gateway
 {
-    protected $Authorization =null;
+    use RecaptchaGateway;
 
     public function __construct()
     {
-        $this->ExtractAuthorizationToken();
-        parent::__construct();
-
+        $this->init_recaptcha();
+        if($this->Version!=3)
+        {
+            throw new \Exception("RecaptchaV3 Gateway Initiated but different Version required");
+        }
     }
 
-    public function ExtractAuthorizationToken()
+    /**
+     * Verifies a Google RecaptchaV3 Response
+     */
+    public function verify(string $g_recaptcha_response) : float
     {
-        if(array_key_exists('Authorization',$_SERVER))
+        $data = array(
+            'secret' => urlencode($this->SecretKey),
+            'response' => urlencode($g_recaptcha_response)
+        );
+        \curl_setopt($this->curl,CURLOPT_POSTFIELDS,http_build_query($data));
+        $response = \curl_exec($this->curl);
+        if(\curl_getinfo($this->curl,CURLINFO_HTTP_CODE)!=200)
         {
-            $this->Authorization = $_SERVER['Authorization'];
+            return 0.0;//TODO make it an exception maybe
         }
-        else if(array_key_exists('HTTP_AUTHORIZATION',$_SERVER))
+        $responseData = json_decode($response,true);
+        if($responseData["success"] && isset($responseData["score"]))
         {
-            $this->Authorization = $_SERVER['HTTP_AUTHORIZATION'];
+            return ((float) $responseData["score"]);
         }
         else
         {
-            $this->Authorization = "";
+            return 0.0;//TODO make it an exception maybe
         }
     }
 }

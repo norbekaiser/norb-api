@@ -13,20 +13,14 @@
 ?>
 <?php
 
-namespace norb_api\CommonGatewayInterfaces;
+namespace norb_api\Config;
 
-require_once __DIR__ . '/AbstractCGI.php';
-require_once __DIR__ . '/../Controllers/AuthController.php';
-
-class CGI_2fa extends AbstractCGI
+trait Version
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    private $Version;
 
-    public function processRequest()
+    public function getVersion(): int
     {
-
+        return $this->Version;
     }
 }

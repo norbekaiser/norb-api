@@ -12,7 +12,13 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Controllers;
+
 require_once __DIR__ . '/../Exceptions/HTTP405_MethodNotAllowed.php';
+
+use norb_api\Exceptions\HTTP405_MethodNotAllowed;
+
 abstract class AbstractController //TODO consider, abstract authorized controlelr, der auch Authorization Header Parsen kann um davon ggf für me controlelr zu erben
 {
     protected $requestMethod;

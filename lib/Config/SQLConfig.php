@@ -12,23 +12,29 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Config;
+
 require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/Traits/Hostname.php';
+require_once __DIR__ . '/Traits/Port.php';
+require_once __DIR__ . '/Traits/DatabaseName.php';
+require_once __DIR__ . '/Traits/UnixSocket.php';
+require_once __DIR__ . '/Traits/Username.php';
+require_once __DIR__ . '/Traits/Password.php';
 
 class SQLConfig extends Config
 {
-    private $hostname;
-    private $port;
-    private $database_name;
-    private $username;
-    private $password;
+    use Hostname, Port, DatabaseName, UnixSocket, Username, Password ;
 
     public function __construct()
     {
-        $this->hostname ='localhost';
-        $this->port = 3306;
-        $this->database_name = '';
-        $this->username = '';
-        $this->password = '';
+        $this->Hostname ='localhost';
+        $this->Port = 3306;
+        $this->DatabaseName = '';
+        $this->UnixSocket = '/var/run/mysqld/mysqld.sock';
+        $this->Username = '';
+        $this->Password = '';
         parent::__construct(__DIR__.'/../../config/database.ini');
     }
 
@@ -36,52 +42,27 @@ class SQLConfig extends Config
     {
         if(is_string($ini_data['Hostname']))
         {
-            $this->hostname = (string)$ini_data['Hostname'];
+            $this->Hostname = (string)$ini_data['Hostname'];
         }
-
         if(is_string($ini_data['Port']))
         {
-            $this->port = (int)$ini_data['Hostname'];
+            $this->Port = (int)$ini_data['Hostname'];
         }
-
         if(is_string($ini_data['Name']))
         {
-            $this->database_name = (string)$ini_data['Name'];
+            $this->DatabaseName = (string)$ini_data['Name'];
         }
-
+        if(is_string($ini_data['Socket']))
+        {
+            $this->UnixSocket = (string)$ini_data['Socket'];
+        }
         if(is_string($ini_data['Username']))
         {
-            $this->username = (string)$ini_data['Username'];
+            $this->Username = (string)$ini_data['Username'];
         }
-
         if(is_string($ini_data['Password']))
         {
-            $this->password = (string)$ini_data['Password'];
+            $this->Password = (string)$ini_data['Password'];
         }
-    }
-
-    public function getHostname(): string
-    {
-        return $this->hostname;
-    }
-
-    public function getPort(): int
-    {
-        return $this->port;
-    }
-
-    public function getDatabaseName(): string
-    {
-        return $this->database_name;
-    }
-
-    public function getUsername(): string
-    {
-        return $this->username;
-    }
-
-    public function getPassword(): string
-    {
-        return $this->password;
     }
 }

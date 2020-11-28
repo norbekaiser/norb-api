@@ -12,8 +12,14 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/Traits/SQLGateway.php';
 require_once __DIR__ . '/../Models/LocalUser.php';
+
+use norb_api\Config\Password;
+use norb_api\Models\LocalUser;
 
 /**
  * Class LocalUserGateway
@@ -29,6 +35,16 @@ class LocalUserGateway
     {
         $this->init_sql();
 
+    }
+
+    private function result_to_LocalUser(\mysqli_result $result) :LocalUser
+    {
+        $userData = $result->fetch_assoc();
+        $LocalUser = new LocalUser();
+        $LocalUser->setUsrId((int) $userData['usr_id']);
+        $LocalUser->setUsername($userData['username']);
+        $LocalUser->setMemberSince($userData['member_since']);
+        return $LocalUser;
     }
 
     public function findUserByUsrID(int $usr_id): LocalUser
@@ -48,14 +64,10 @@ class LocalUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LocalUser Could not be found By UsrID");
+            throw new \Exception("LocalUser Could not be found By UsrID");
         }
-        $userData = $result->fetch_assoc();
-        $LocalUser = new LocalUser();
-        $LocalUser->setUsrId($userData['usr_id']);
-        $LocalUser->setUsername($userData['username']);
-        $LocalUser->setMemberSince($userData['member_since']);
-        return $LocalUser;
+        $res = $this->result_to_LocalUser($result);
+        return $res;
     }
 
 
@@ -76,14 +88,10 @@ class LocalUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LocalUser Could not be found By Username");
+            throw new \Exception("LocalUser Could not be found By Username");
         }
-        $userData = $result->fetch_assoc();
-        $LocalUser = new LocalUser();
-        $LocalUser->setUsrId($userData['usr_id']);
-        $LocalUser->setUsername($userData['username']);
-        $LocalUser->setMemberSince($userData['member_since']);
-        return $LocalUser;
+        $res = $this->result_to_LocalUser($result);
+        return $res;
     }
 
     public function insertLocalUser(string $username,string $password): LocalUser
@@ -114,13 +122,23 @@ class LocalUserGateway
         {
 
             $this->sql_db->rollback();
-            throw new Exception("LocalUser Could not be Created");
+            throw new \Exception("LocalUser Could not be Created");
         }
         else{
             $this->sql_db->commit();
             $LocalUser->setUsrId($new_user_id);
         }
         return $LocalUser;
+    }
+
+    private function PasswordVerify($password,\mysqli_result $result): bool
+    {
+        $userData = $result->fetch_assoc();
+        if(!password_verify($password,$userData['password']))
+        {
+            throw new \Exception("Invalid Password");
+        }
+        return true;
     }
 
     public function Authenticate(string $username, string $password): LocalUser
@@ -141,18 +159,12 @@ class LocalUserGateway
         $result = $stmt->get_result();
         if($result->num_rows != 1)
         {
-            throw new Exception("LocalUser Could not be found By Username");
+            throw new \Exception("LocalUser Could not be found By Username");
         }
-        $userData = $result->fetch_assoc();
-        if(!password_verify($password,$userData['password']))
-        {
-            throw new Exception("Invalid Password");
-        }
-        $LocalUser = new LocalUser();
-        $LocalUser->setUsrId($userData['usr_id']);
-        $LocalUser->setUsername($userData['username']);
-        $LocalUser->setMemberSince($userData['member_since']);
-        return $LocalUser;
+        $this->PasswordVerify($password,$result);
+        mysqli_data_seek($result,0);
+        $res = $this->result_to_LocalUser($result);
+        return $res;
     }
 
     public function ChangePassword(LocalUser $user,string $password): void
@@ -170,7 +182,7 @@ class LocalUserGateway
         $stmt->execute();
         if($stmt->affected_rows != 1)
         {
-            throw new Exception("Password not Changed");
+            throw new \Exception("Password not Changed");
         }
     }
 

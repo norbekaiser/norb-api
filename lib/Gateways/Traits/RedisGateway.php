@@ -12,8 +12,14 @@
 //        3. This notice may not be removed or altered from any source distribution.
 ?>
 <?php
+
+namespace norb_api\Gateways;
+
 require_once __DIR__ . '/../../Config/RedisConfig.php';
 require_once __DIR__ . '/../../Connectors/DatabaseConnectorRedis.php';
+
+use norb_api\Config\RedisConfig;
+use norb_api\Connectors\DatabaseConnectorRedis;
 
 trait RedisGateway
 {
