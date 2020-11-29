@@ -20,12 +20,12 @@ require_once __DIR__ . '/../../Connectors/CurlConnector.php';
 
 use norb_api\Config\RecaptchaConfig;
 use norb_api\Connectors\CurlConnector;
+use function curl_setopt;
 
 trait RecaptchaGateway
 {
     private $SecretKey;
     private $Version;
-    private $RecaptchaURL;
     private $CurlConnector = null;
     private $curl = null;
 
@@ -34,8 +34,9 @@ trait RecaptchaGateway
         $RecaptchaConfig = new RecaptchaConfig();
         $this->CurlConnector = new CurlConnector();
         $this->curl = $this->CurlConnector->getCurl();
-        \curl_setopt($this->curl,CURLOPT_URL,'https://www.google.com/recaptcha/api/siteverify');
-        \curl_setopt($this->curl, CURLOPT_POST, true);
+        curl_setopt($this->curl,CURLOPT_URL,'https://www.google.com/recaptcha/api/siteverify');
+        curl_setopt($this->curl, CURLOPT_POST, true);
         $this->SecretKey = $RecaptchaConfig->getSecretKey();
+        $this->Version = $RecaptchaConfig->getVersion();
     }
 }
