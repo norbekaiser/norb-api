@@ -22,6 +22,7 @@ require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
+require_once __DIR__ . '/../Gateways/RecaptchaV3Gateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 

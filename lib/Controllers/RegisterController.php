@@ -20,8 +20,9 @@ require_once __DIR__ .'/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ .'/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
+require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
+require_once __DIR__ . '/../Gateways/RecaptchaV3Gateway.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
-require_once __DIR__ . '/../recaptcha/recaptcha_validator.php';
 
 use norb_api\Exceptions\HTTP_Exception;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
