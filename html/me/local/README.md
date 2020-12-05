@@ -1,5 +1,5 @@
 # Endpoint: {api_url}/me/local/
-This Endpoint is Responsible for returning current User Data
+This Endpoint is Responsible for returning Additional User Data from the Local Storage
 
 # HTTP Requests
 The Following HTTP Requests are Possible
@@ -37,7 +37,7 @@ It will return the Local Userdata
 }
 ```
 
-### On Failure
+#### Unauthenticated / Not an LDAP User
  
 ```http request
 'HTTP/1.1 401 Unauthorized'
@@ -82,7 +82,7 @@ It will return if the value was successfully changed
 
 ### On Failure
  
-#### Unauthenticated
+#### Unauthenticated / Not an LDAP User
 
 ```http request
 'HTTP/1.1 401 Unauthorized'

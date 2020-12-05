@@ -1,5 +1,5 @@
 # Endpoint: {api_url}/me/ldap/
-This Endpoint is Responsible for returning current User Data
+This Endpoint is Responsible for returning Additional User Data from LDAP
 
 # HTTP Requests
 The Following HTTP Requests are Possible
@@ -24,33 +24,27 @@ Authorization: 1234567890
 ```
 
 ### On Success
-It will return the userdata, depending on the origin more ore less might be returned
+It will return the Distinguished Name
 
 ```http request
 'HTTP/1.1 200 OK'
 ```
 ```json
 {
-    "usr_id": 1,
-    "username": "cn=dave,ou=users,dc=ldap,dc=example,dc=com",
-    "member_since": "2020-02-02 02:02:02",
-    "cn": "user",
-    "uid": "user",
-    "uidNumber": "1000",
-    "gidNumber": "1000",
-    "homeDirectory": "/home/users/user",
-    "loginShell": "/bin/bash"
+    "dn": "cn=dave,ou=users,dc=ldap,dc=example,dc=com",
+    "member_since": "2020-02-02 02:02:02"
 }
 ```
 
 ### On Failure
  
+#### Unauthenticated / Not an LDAP User
+
 ```http request
 'HTTP/1.1 401 Unauthorized'
 ```
 ```json
 ```
-___
 
 ## PATCH
 
@@ -90,7 +84,7 @@ It will return if the value was successfully changed
 
 ### On Failure
  
-#### Unauthenticated
+#### Unauthenticated / Not an LDAP User
 
 ```http request
 'HTTP/1.1 401 Unauthorized'

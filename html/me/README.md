@@ -25,7 +25,7 @@ Authorization: 1234567890
 
 ### On Success
 It will return the Userdata, and which type the user data
-Further Requests to {API_URL}/me/type will give more details
+Further Requests to {API_URL}/me/{type} will give more details
 
 ```http request
 'HTTP/1.1 200 OK'

@@ -16,21 +16,21 @@
 namespace norb_api\Controllers;
 
 require_once __DIR__ . '/AbstractHeaderController.php';
-require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
-require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
-require_once __DIR__ . '/../Config/RegistrationConfig.php';
-require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
-require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
-require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/UserGateway.php';
 require_once __DIR__ . '/../Gateways/SessionGateway.php';
+require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
+require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
+require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
+require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
+require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
+require_once __DIR__ . '/../Config/RegistrationConfig.php';
 
 use norb_api\Gateways\UserGateway;
+use norb_api\Gateways\SessionGateway;
 use norb_api\Gateways\LocalUserGateway;
 use norb_api\Gateways\LocalLdapUserGateway;
-use norb_api\Gateways\SessionGateway;
-use norb_api\Exceptions\HTTP401_Unauthorized;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
+use norb_api\Exceptions\HTTP401_Unauthorized;
 
 class MeController extends AbstractHeaderController
 {

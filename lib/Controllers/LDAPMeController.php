@@ -16,21 +16,22 @@
 namespace norb_api\Controllers;
 
 require_once __DIR__ . '/AbstractHeaderController.php';
-require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
-require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
-require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
-require_once __DIR__ . '/../Config/RegistrationConfig.php';
+require_once __DIR__ . '/../Models/LDAPUser.php';
+require_once __DIR__ . '/../Gateways/SessionGateway.php';
 require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
-require_once __DIR__ . '/../Gateways/SessionGateway.php';
+require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
+require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
+require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
+require_once __DIR__ . '/../Config/RegistrationConfig.php';
 
-use norb_api\Gateways\LdapUserGateway;
-use norb_api\Gateways\LocalLdapUserGateway;
-use norb_api\Gateways\SessionGateway;
 use norb_api\Models\LDAPUser;
-use norb_api\Exceptions\HTTP400_BadRequest;
-use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Gateways\SessionGateway;
+use norb_api\Gateways\LocalLdapUserGateway;
+use norb_api\Gateways\LdapUserGateway;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
+use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Exceptions\HTTP400_BadRequest;
 use norb_api\Config\RegistrationConfig;
 
 class LDAPMeController extends AbstractHeaderController
@@ -52,22 +53,16 @@ class LDAPMeController extends AbstractHeaderController
         parent::__construct($requestMethod,$Authorization);
     }
 
-
-    /**
-     * Maps the LDAP user to the result
-     * @param LDAPUser $user
-     * @return array
-     */
     private function LdapUser_data_to_resp(LDAPUser $user): array
     {
         return array(
-            'dn' => $user->getDn(),
-            'member_since' => $user->getMemberSince(),
+            'dn' => $user->getDN(),
+            'member_since' => $user->getMemberSince()
         );
     }
 
     /**
-     * Verifys that a session user was issued
+     * Verifys that a ldap user has been set via parseAuthorization
      * @throws HTTP401_Unauthorized
      */
     private function require_valid_session()
@@ -80,26 +75,31 @@ class LDAPMeController extends AbstractHeaderController
 
     /**
      * Returns the User Data
-     * @return mixed|void boils down to at least usr_id  and username/dn( also username)
-     * @throws HTTP401_Unauthorized , requires a valid session
-     * @throws HTTP422_UnprocessableEntity, if the user can't be found either in userlocal or userldap , this will hapoen
+     * @return mixed|void dn
+     * @throws HTTP401_Unauthorized , requires a valid session and the user to be an ldap user
+     * @throws HTTP422_UnprocessableEntity, if the user can't be found in the ldap database
      */
     protected function GetRequest()
     {
         $this->require_valid_session();
         $LdapUserGateway = new LdapUserGateway();
-        $ldapuser = $LdapUserGateway->findByDN($this->ldap_user);
+        try{
+            $ldapuser = $LdapUserGateway->findByDN($this->ldap_user);
+        }
+        catch (\Exception $e)
+        {
+            throw new HTTP422_UnprocessableEntity();
+        }
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
-        $resp['data'] = $ldapuser->getDN();
+        $resp['data'] = $this->LdapUser_data_to_resp($ldapuser);
         return $resp;
     }
 
     /**
      * Used to Modify User Data
      * @return mixed|void
-     * @throws HTTP422_UnprocessableEntity if the user is not n ldap user
      * @throws HTTP400_BadRequest if the format is not valid, e.g. not enough digits or no valid email
-     * @throws HTTP401_Unauthorized if the user is ńot authorized to do this request
+     * @throws HTTP401_Unauthorized if the user is ńot authorized to do this request, e.g. invalid session or not an ldap user
      */
     protected function PatchRequest()
     {

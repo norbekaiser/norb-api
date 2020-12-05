@@ -16,22 +16,22 @@
 namespace norb_api\Controllers;
 
 require_once __DIR__ . '/AbstractController.php';
-require_once __DIR__ .'/../Exceptions/HTTP400_BadRequest.php';
-require_once __DIR__ .'/../Exceptions/HTTP422_UnprocessableEntity.php';
-require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
-require_once __DIR__ . '/../Config/RecaptchaConfig.php';
-require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
 require_once __DIR__ . '/../Gateways/RecaptchaV3Gateway.php';
+require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
+require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
+require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
+require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
+require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 
+use norb_api\Gateways\RecaptchaV3Gateway;
+use norb_api\Gateways\RecaptchaV2Gateway;
+use norb_api\Gateways\LocalUserGateway;
 use norb_api\Exceptions\HTTP_Exception;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
 use norb_api\Exceptions\HTTP400_BadRequest;
-use norb_api\Gateways\LocalUserGateway;
-use norb_api\Gateways\RecaptchaV2Gateway;
-use norb_api\Gateways\RecaptchaV3Gateway;
-use norb_api\Config\RecaptchaConfig;
 use norb_api\Config\RegistrationConfig;
+use norb_api\Config\RecaptchaConfig;
 
 class RegisterController extends AbstractController
 {

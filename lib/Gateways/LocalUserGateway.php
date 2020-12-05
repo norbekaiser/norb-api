@@ -18,7 +18,6 @@ namespace norb_api\Gateways;
 require_once __DIR__ . '/Traits/SQLGateway.php';
 require_once __DIR__ . '/../Models/LocalUser.php';
 
-use norb_api\Config\Password;
 use norb_api\Models\LocalUser;
 
 /**
@@ -177,8 +176,9 @@ class LocalUserGateway
             WHERE users_local.username=? LIMIT 1
         SQL;
         $password_hash = password_hash($password,PASSWORD_DEFAULT);
+        $username = $user->getUsername();
         $stmt = $this->sql_db->prepare($query);
-        $stmt->bind_param('ss',$password_hash,$user->getUsername());
+        $stmt->bind_param('ss',$password_hash, $username);
         $stmt->execute();
         if($stmt->affected_rows != 1)
         {

@@ -16,11 +16,11 @@
 namespace norb_api\Connectors;
 
 require_once __DIR__ . '/DatabaseConnector.php';
-require_once __DIR__ . '/../Config/LDAPConfig.php';
 require_once __DIR__ . '/../Exceptions/NoConnectivityLDAP.php';
+require_once __DIR__ . '/../Config/LDAPConfig.php';
 
-use norb_api\Config\LDAPConfig;
 use norb_api\Exceptions\NoConnectivityLDAP;
+use norb_api\Config\LDAPConfig;
 
 class DatabaseConnectorLDAP extends DatabaseConnector
 {
