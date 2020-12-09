@@ -17,13 +17,15 @@ Authorization: session_id
 #### JSON Payload
 * none
 
-### Example
+#### Example
 
 ```http request
 Authorization: 1234567890
 ```
 
-### On Success
+### Results
+
+#### Successful Request
 It will return the Userdata, and which type the user data
 Further Requests to {API_URL}/me/{type} will give more details
 
@@ -37,7 +39,7 @@ Further Requests to {API_URL}/me/{type} will give more details
 }
 ```
 
-### On Failure
+#### Faulty Authorization
  
 ```http request
 'HTTP/1.1 401 Unauthorized'

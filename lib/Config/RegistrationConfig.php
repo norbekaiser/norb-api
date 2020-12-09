@@ -36,19 +36,19 @@ class RegistrationConfig extends Config
 
     protected function parse_file($ini_data)
     {
-        if(is_bool($ini_data['Enabled']))
+        if(isset($ini_data['Enabled']) and is_bool($ini_data['Enabled']))
         {
             $this->Enabled = (bool) $ini_data['Enabled'];
         }
-        if(is_numeric($ini_data['MinLength']))
+        if(isset($ini_data['MinLength']) and is_numeric($ini_data['MinLength']))
         {
             $this->MinimumLength = abs((int) $ini_data['MinLength']);
         }
-        if(is_bool($ini_data['Letters']))
+        if(isset($ini_data['Letters']) and is_bool($ini_data['Letters']))
         {
             $this->RequiresLetters = (bool) $ini_data['Letters'];
         }
-        if(is_bool($ini_data['Digits']))
+        if(isset($ini_data['Digits']) and is_bool($ini_data['Digits']))
         {
             $this->RequiresDigits = (bool) $ini_data['Digits'];
         }

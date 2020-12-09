@@ -29,11 +29,11 @@ abstract class Config
 
     protected abstract function parse_file($ini_data);
 
-    protected function assign_value($source,$key,& $target)//Todo tpye hints or so might be nice
-    {
-        if(array_key_exists($key,$source))
-        {
-           $target = $source[$key];
-        }
-    }
+//    protected function assign_value($source,$key,& $target)//Todo tpye hints or so might be nice
+//    {
+//        if(array_key_exists($key,$source))
+//        {
+//           $target = $source[$key];
+//        }
+//    }
 }

@@ -34,16 +34,16 @@ class RecaptchaConfig extends Config
 
     protected function parse_file($ini_data)
     {
-        if(is_bool($ini_data['Enabled']))
+        if(isset($ini_data['Enabled']) and is_bool($ini_data['Enabled']))
         {
             $this->Enabled = (bool) $ini_data['Enabled'];
         }
 
-        if(is_numeric($ini_data['Version']))
+        if(isset($ini_data['Version']) and is_numeric($ini_data['Version']))
         {
             $this->Version = (int) $ini_data['Version'];
         }
-        if(is_string($ini_data['SecretKey']))
+        if(isset($ini_data['SecretKey']) and is_string($ini_data['SecretKey']))
         {
             $this->SecretKey = (string) $ini_data['SecretKey'];
         }

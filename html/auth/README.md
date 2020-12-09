@@ -19,7 +19,7 @@ ___
 | password | String | The Required Password |
 | g_recaptcha_response | String | The Recaptcha Response From the Client |
 
-### Example
+#### Example
 
 ```json
 {
@@ -29,7 +29,9 @@ ___
 }
 ```
 
-### On Success 
+### Results
+
+### Successful Request 
 
 ```http request
 'HTTP/1.1 200 OK'
@@ -40,10 +42,8 @@ ___
 }
 ```
 
-### On Failure
-
 #### Faulty Input Format
-
+When Authorizing, the Request may fail e.g. due to a Faulty Input Format
 ```http request
 'HTTP/1.1 400 Bad Request'
 ```
@@ -65,7 +65,7 @@ ___
 ```
 
 #### Faulty Input Data
-
+Despite a Valid Format, the Authorization Request might still fail due to false Captcha and/or Invalid Credentials
 ```http request
 'HTTP/1.1 422 Unprocessable Entity'
 ```

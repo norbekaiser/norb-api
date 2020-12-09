@@ -19,7 +19,7 @@ ___
 | password | String | The Required Password |
 | g_recaptcha_response | String | The Recaptcha Response From the User Client |
 
-### Example
+#### Example
 
 ```json
 {
@@ -29,8 +29,10 @@ ___
 }
 ```
 
-### On Success 
+### Results
 
+#### Successful Request
+If a Valid User was created, it will return the new users Data, e.g. the Username
 ```http request
 'HTTP/1.1 200 OK'
 ```
@@ -40,9 +42,8 @@ ___
 }
 ```
 
-### On Failure
-
-#### Faulty Input Format 
+#### Faulty Input Format
+Faulty Input Format can cause Multiple Errors 
 
 ```http request
 'HTTP/1.1 400 Bad Request'
@@ -89,6 +90,7 @@ ___
 ```
 
 #### Faulty Input Data
+Despite a valid Payload, the User Creation might fail if the user already exists or e.g. the captcha failed
 
 ```http request
 'HTTP/1.1 422 Unprocessable Entity'

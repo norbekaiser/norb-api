@@ -36,19 +36,19 @@ class RedisConfig extends Config
 
     protected function parse_file($ini_data)
     {
-        if(is_string($ini_data['Hostname']))
+        if(isset($ini_data['Hostname']) and is_string($ini_data['Hostname']))
         {
             $this->Hostname = (string) $ini_data['Hostname'];
         }
-        if(is_numeric($ini_data['Port']))
+        if(isset($ini_data['Port']) and is_numeric($ini_data['Port']))
         {
             $this->Port = (int) $ini_data['Port'];
         }
-        if(is_string($ini_data['Password']))
+        if(isset($ini_data['Password']) and is_string($ini_data['Password']))
         {
             $this->Password = (string) $ini_data['Password'];
         }
-        if(is_numeric($ini_data['DatabaseID']))
+        if(isset($ini_data['DatabaseID']) and is_numeric($ini_data['DatabaseID']))
         {
             $this->DatabaseID = (int) $ini_data['DatabaseID'];
         }

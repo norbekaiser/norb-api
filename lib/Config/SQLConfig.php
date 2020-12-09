@@ -40,27 +40,27 @@ class SQLConfig extends Config
 
     public function parse_file($ini_data)
     {
-        if(is_string($ini_data['Hostname']))
+        if(isset($ini_data['Hostname']) and is_string($ini_data['Hostname']))
         {
             $this->Hostname = (string)$ini_data['Hostname'];
         }
-        if(is_string($ini_data['Port']))
+        if(isset($ini_data['Port']) and is_string($ini_data['Port']))
         {
             $this->Port = (int)$ini_data['Hostname'];
         }
-        if(is_string($ini_data['Name']))
+        if(isset($ini_data['Name']) and is_string($ini_data['Name']))
         {
             $this->DatabaseName = (string)$ini_data['Name'];
         }
-        if(is_string($ini_data['Socket']))
+        if(isset($ini_data['Socket']) and is_string($ini_data['Socket']))
         {
             $this->UnixSocket = (string)$ini_data['Socket'];
         }
-        if(is_string($ini_data['Username']))
+        if(isset($ini_data['Username']) and is_string($ini_data['Username']))
         {
             $this->Username = (string)$ini_data['Username'];
         }
-        if(is_string($ini_data['Password']))
+        if(isset($ini_data['Password']) and is_string($ini_data['Password']))
         {
             $this->Password = (string)$ini_data['Password'];
         }

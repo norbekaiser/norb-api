@@ -40,27 +40,27 @@ class LDAPConfig extends Config
 
     public function parse_file($ini_data)
     {
-        if(is_bool($ini_data['enabled']))
+        if(isset($ini_data['enabled']) and is_bool($ini_data['enabled']))
         {
             $this->Enabled = (bool) $ini_data['enabled'];
         }
-        if(is_string($ini_data['uri']))
+        if(isset($ini_data['uri']) and is_string($ini_data['uri']))
         {
             $this->URI = (string) $ini_data['uri'];
         }
-        if(is_int($ini_data['port']))
+        if(isset($ini_data['port']) and is_int($ini_data['port']))
         {
             $this->Port = abs((int) $ini_data['port']);
         }
-        if(is_string($ini_data['admin_dn']))
+        if(isset($ini_data['admin_dn']) and is_string($ini_data['admin_dn']))
         {
             $this->AdminDN = (string) $ini_data['admin_dn'];
         }
-        if(is_string($ini_data['admin_pw']))
+        if(isset($ini_data['admin_pw']) and is_string($ini_data['admin_pw']))
         {
             $this->AdminPassword = (string) $ini_data['admin_pw'];
         }
-        if(is_string($ini_data['base_dn']))
+        if(isset($ini_data['base_dn']) and is_string($ini_data['base_dn']))
         {
             $this->BaseDN = (string) $ini_data['base_dn'];
         }

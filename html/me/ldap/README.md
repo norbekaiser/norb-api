@@ -17,14 +17,16 @@ Authorization: session_id
 #### JSON Payload
 * none
 
-### Example
+#### Example
 
 ```http request
 Authorization: 1234567890
 ```
 
-### On Success
-It will return the Distinguished Name
+### Results
+
+#### Successful Request
+It will return the Distinguished Name of the User
 
 ```http request
 'HTTP/1.1 200 OK'
@@ -36,10 +38,8 @@ It will return the Distinguished Name
 }
 ```
 
-### On Failure
- 
-#### Unauthenticated / Not an LDAP User
-
+#### Faulty Authorization
+If the User does not have a Valid Session or if he is not a LDAP User, the Request is unauthorized
 ```http request
 'HTTP/1.1 401 Unauthorized'
 ```
@@ -63,13 +63,15 @@ Authorization: session_id
 | password | (Optional) String | The Desired new Password |
 | email | (Optional) String | The Desired new Email Address |
 
-### Example
+#### Example
 
 ```http request
 Authorization: 1234567890
 ```
 
-### On Success
+### Results
+
+#### On Success
 It will return if the value was successfully changed
 
 ```http request
@@ -82,10 +84,8 @@ It will return if the value was successfully changed
 }
 ```
 
-### On Failure
- 
-#### Unauthenticated / Not an LDAP User
-
+#### Faulty Authorization
+If the User does not have a Valid Session or if he is not a LDAP User, the Request is unauthorized
 ```http request
 'HTTP/1.1 401 Unauthorized'
 ```
