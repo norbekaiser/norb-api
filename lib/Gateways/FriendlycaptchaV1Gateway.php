@@ -13,33 +13,43 @@
 ?>
 <?php
 
-namespace norb_api\Config;
+namespace norb_api\Gateways;
 
-require_once __DIR__ . '/Traits/Version.php';
-require_once __DIR__ . '/Traits/SecretKey.php';
-require_once __DIR__ . '/Traits/Enabled.php';
-require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/Traits/FriendlycaptchaGateway.php';
 
-class RecaptchaConfig extends Config
+class FriendlycaptchaV1Gateway
 {
-    use Version, SecretKey;
+    use FriendlycaptchaGateway;
 
     public function __construct()
     {
-        $this->Version = 2;
-        $this->SecretKey ="";
-        parent::__construct(__DIR__ . '/../../config/captcha.ini',true);
+        $this->init_recaptcha();
     }
 
-    protected function parse_file($ini_data)
+    /**
+     * Verifies a Friendlycaptcha Response
+     */
+    public function verify(string $solution) : bool
     {
-        if(isset($ini_data['recaptcha']['Version']) and is_numeric($ini_data['recaptcha']['Version']))
+        $data = array(
+            'solution' => $solution,
+            'secret' => urlencode($this->SecretKey),
+            'sitekey' => urlencode($this->SiteKey)
+        );
+        \curl_setopt($this->curl,CURLOPT_POSTFIELDS,http_build_query($data));
+        $response = \curl_exec($this->curl);
+        if(\curl_getinfo($this->curl,CURLINFO_HTTP_CODE)!=200)
         {
-            $this->Version = (int) $ini_data['recaptcha']['Version'];
+            return false;//TODO make it an exception maybe
         }
-        if(isset($ini_data['recaptcha']['SecretKey']) and is_string($ini_data['recaptcha']['SecretKey']))
+        $responseData = json_decode($response,true);
+        if($responseData["success"])
         {
-            $this->SecretKey = (string) $ini_data['recaptcha']['SecretKey'];
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }

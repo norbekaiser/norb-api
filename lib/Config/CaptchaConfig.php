@@ -15,31 +15,27 @@
 
 namespace norb_api\Config;
 
-require_once __DIR__ . '/Traits/Version.php';
-require_once __DIR__ . '/Traits/SecretKey.php';
 require_once __DIR__ . '/Traits/Enabled.php';
+require_once __DIR__ . '/Traits/Type.php';
 require_once __DIR__ . '/Config.php';
 
-class RecaptchaConfig extends Config
+class CaptchaConfig extends Config
 {
-    use Version, SecretKey;
+    use Enabled,Type;
 
     public function __construct()
     {
-        $this->Version = 2;
-        $this->SecretKey ="";
-        parent::__construct(__DIR__ . '/../../config/captcha.ini',true);
+        $this->Enabled = false;
+        $this->Type = '';
+        parent::__construct(__DIR__ . '/../../config/captcha.ini');
     }
 
     protected function parse_file($ini_data)
     {
-        if(isset($ini_data['recaptcha']['Version']) and is_numeric($ini_data['recaptcha']['Version']))
+        if(isset($ini_data['Enabled']) && is_bool($ini_data['Enabled']) && isset($ini_data['Type']) && is_string($ini_data['Type']))
         {
-            $this->Version = (int) $ini_data['recaptcha']['Version'];
-        }
-        if(isset($ini_data['recaptcha']['SecretKey']) and is_string($ini_data['recaptcha']['SecretKey']))
-        {
-            $this->SecretKey = (string) $ini_data['recaptcha']['SecretKey'];
+            $this->Enabled = (bool) $ini_data['Enabled'];
+            $this->Type = (string) $ini_data['Type'];
         }
     }
 }

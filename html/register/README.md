@@ -17,7 +17,8 @@ ___
 | :--- |:--- | :--- |
 | username | String | The Required Username |
 | password | String | The Required Password |
-| g_recaptcha_response | String | The Recaptcha Response From the User Client |
+| g_recaptcha_response | String (Optional unless Configured) | The Google Recaptcha Response From the Client |
+| friendlycaptcha_solution | String (Optional unless Configured) | The Friendlycaptcha Solution From the Client |
 
 #### Example
 

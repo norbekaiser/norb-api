@@ -18,18 +18,23 @@ namespace norb_api\Controllers;
 require_once __DIR__ . '/AbstractController.php';
 require_once __DIR__ . '/../Gateways/RecaptchaV3Gateway.php';
 require_once __DIR__ . '/../Gateways/RecaptchaV2Gateway.php';
+require_once __DIR__ . '/../Gateways/FriendlycaptchaV1Gateway.php';
 require_once __DIR__ . '/../Gateways/LocalUserGateway.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
 require_once __DIR__ . '/../Config/RecaptchaConfig.php';
 
+use norb_api\Config\FriendlycaptchaConfig;
+use norb_api\Exceptions\HTTP500_InternalServerError;
+use norb_api\Gateways\FriendlycaptchaV1Gateway;
 use norb_api\Gateways\RecaptchaV3Gateway;
 use norb_api\Gateways\RecaptchaV2Gateway;
 use norb_api\Gateways\LocalUserGateway;
 use norb_api\Exceptions\HTTP_Exception;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
 use norb_api\Exceptions\HTTP400_BadRequest;
+use norb_api\Config\CaptchaConfig;
 use norb_api\Config\RegistrationConfig;
 use norb_api\Config\RecaptchaConfig;
 
@@ -68,7 +73,7 @@ class RegisterController extends AbstractController
     }
 
     private function validateCandidate($input){
-        $CaptchaConfig = new RecaptchaConfig();
+        $CaptchaConfig = new CaptchaConfig();
         $RegistrationConfig = new RegistrationConfig();
         if(!($RegistrationConfig->getEnabled())){
             throw new HTTP400_BadRequest("Registration is Disabled");
@@ -82,11 +87,6 @@ class RegisterController extends AbstractController
         if(!isset($input['password']))
         {
             throw new HTTP400_BadRequest("No Password Supplied");
-        }
-        /** Candidate must provide a google recaptcha response */
-        if($CaptchaConfig->getEnabled() && !isset($input['g_recaptcha_response']))
-        {
-            throw new HTTP400_BadRequest("No Google Recaptcha Response Supplied");
         }
 
         /** username must be email */
@@ -112,20 +112,57 @@ class RegisterController extends AbstractController
             throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
         }
         /** Verifying Google Recaptcha */
-        if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==2)
+        if($CaptchaConfig->getEnabled())
         {
-            $captcha = new RecaptchaV2Gateway();
-            if(! ($captcha->verify($input['g_recaptcha_response'])))
+            switch ($CaptchaConfig->getType())
             {
-                throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
-            }
-        }
-        else if($CaptchaConfig->getEnabled() && $CaptchaConfig->getVersion()==3)
-        {
-            $captcha = new RecaptchaV3Gateway();
-            if(! (($captcha->verify($input['g_recaptcha_response']))>=0.5) )
-            {
-                throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
+                case 'recaptcha':
+                    {
+                        if(!isset($input['g_recaptcha_response']))
+                        {
+                            throw new HTTP400_BadRequest("No Google Recaptcha Response Supplied");
+                        }
+                        $ReCaptchaConfig = new RecaptchaConfig();
+                        switch ($ReCaptchaConfig->getVersion())
+                        {
+                            case 2:
+                                {
+                                    $captcha = new RecaptchaV2Gateway();
+                                    if(! ($captcha->verify($input['g_recaptcha_response'])))
+                                    {
+                                        throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
+                                    }
+                                }
+                                break;
+                            case 3:
+                                {
+                                    $captcha = new RecaptchaV3Gateway();
+                                    if(! (($captcha->verify($input['g_recaptcha_response']))>=0.5) )
+                                    {
+                                        throw new HTTP422_UnprocessableEntity(("Recaptcha Failed"));
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new HTTP500_InternalServerError('Strange Recaptcha Version');
+                        }
+                    }
+                    break;
+                case 'friendlycaptcha':
+                    {
+                        if(!isset($input['friendlycaptcha_solution']))
+                        {
+                            throw new HTTP400_BadRequest("No Friendlycaptcha Solution Supplied");
+                        }
+                        $captcha = new FriendlycaptchaV1Gateway();
+                        if(! ($captcha->verify($input['friendlycaptcha_solution'])))
+                        {
+                            throw new HTTP422_UnprocessableEntity(("Friendlycatpcha Failed"));
+                        }
+                    }
+                    break;
+                default:
+                    throw new HTTP500_InternalServerError('Captcha Missconfigured');
             }
         }
     }

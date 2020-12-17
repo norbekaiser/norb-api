@@ -13,33 +13,30 @@
 ?>
 <?php
 
-namespace norb_api\Config;
+namespace norb_api\Gateways;
 
-require_once __DIR__ . '/Traits/Version.php';
-require_once __DIR__ . '/Traits/SecretKey.php';
-require_once __DIR__ . '/Traits/Enabled.php';
-require_once __DIR__ . '/Config.php';
+require_once __DIR__ . '/../../Config/FriendlycaptchaConfig.php';
+require_once __DIR__ . '/../../Connectors/CurlConnector.php';
 
-class RecaptchaConfig extends Config
+use norb_api\Config\FriendlycaptchaConfig;
+use norb_api\Connectors\CurlConnector;
+use function curl_setopt;
+
+trait FriendlycaptchaGateway
 {
-    use Version, SecretKey;
+    private $SecretKey;
+    private $SiteKey;
+    private $CurlConnector = null;
+    private $curl = null;
 
-    public function __construct()
+    private function init_recaptcha()
     {
-        $this->Version = 2;
-        $this->SecretKey ="";
-        parent::__construct(__DIR__ . '/../../config/captcha.ini',true);
-    }
-
-    protected function parse_file($ini_data)
-    {
-        if(isset($ini_data['recaptcha']['Version']) and is_numeric($ini_data['recaptcha']['Version']))
-        {
-            $this->Version = (int) $ini_data['recaptcha']['Version'];
-        }
-        if(isset($ini_data['recaptcha']['SecretKey']) and is_string($ini_data['recaptcha']['SecretKey']))
-        {
-            $this->SecretKey = (string) $ini_data['recaptcha']['SecretKey'];
-        }
+        $FriendlycaptchaConfig = new FriendlycaptchaConfig();
+        $this->CurlConnector = new CurlConnector();
+        $this->curl = $this->CurlConnector->getCurl();
+        curl_setopt($this->curl,CURLOPT_URL,'https://friendlycaptcha.com/api/v1/siteverify');
+        curl_setopt($this->curl, CURLOPT_POST, true);
+        $this->SecretKey = $FriendlycaptchaConfig->getSecretKey();
+        $this->SiteKey = $FriendlycaptchaConfig->getSiteKey();
     }
 }
