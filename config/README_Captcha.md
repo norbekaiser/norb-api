@@ -30,7 +30,7 @@ Enabled = true
 Type = 'recaptcha'
 
 [recaptcha]
-Version = 2
+Version = 3
 SecretKey = mysecretkey
 ```
 
