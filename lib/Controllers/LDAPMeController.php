@@ -24,7 +24,9 @@ require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP403_Forbidden.php';
 require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
+require_once __DIR__ . '/../Exceptions/HTTP500_InternalServerError.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
+
 
 use norb_api\Models\LDAPUser;
 use norb_api\Gateways\SessionGateway;
@@ -34,6 +36,7 @@ use norb_api\Exceptions\HTTP422_UnprocessableEntity;
 use norb_api\Exceptions\HTTP401_Unauthorized;
 use norb_api\Exceptions\HTTP403_Forbidden;
 use norb_api\Exceptions\HTTP400_BadRequest;
+use norb_api\Exceptions\HTTP500_InternalServerError;
 use norb_api\Config\RegistrationConfig;
 use norb_api\Config\LDAPConfig;
 
@@ -103,6 +106,8 @@ class LDAPMeController extends AbstractHeaderController
      * @return mixed|void
      * @throws HTTP400_BadRequest if the format is not valid, e.g. not enough digits or no valid email
      * @throws HTTP401_Unauthorized if the user is ńot authorized to do this request, e.g. invalid session or not an ldap user
+     * @throws HTTP403_Forbidden if the user is ńot allowe to change his password
+     * @throws HTTP500_InternalServerError if for some reason the task can not be carreid out by the ldap ( e.g. an blocking acl)
      */
     protected function PatchRequest()
     {
@@ -110,17 +115,23 @@ class LDAPMeController extends AbstractHeaderController
         $input = (array) json_decode(file_get_contents('php://input'), true);
         $this->validatePatchData($input);
         $LdapUserGateway = new LdapUserGateway();
+        try {
+            if(isset($input['password']))
+            {
+                $LdapUserGateway->ChangePassword($this->ldap_user,$input['password']);
+                $resp['data']['password'] = "modified";
+            }
+            if(isset($input['email']))
+            {
+                $LdapUserGateway->ChangeEmail($this->ldap_user,$input['email']);
+                $resp['data']['email'] = "modified";
+            }
+        }
+        catch (\Exception $e)
+        {
+            throw new HTTP500_InternalServerError("Patch could not be applied");
+        }
 
-        if(isset($input['password']))
-        {
-            $LdapUserGateway->ChangePassword($this->ldap_user,$input['password']);
-            $resp['data']['password'] = "modified";
-        }
-        if(isset($input['email']))
-        {
-            $LdapUserGateway->ChangeEmail($this->ldap_user,$input['email']);
-            $resp['data']['email'] = "modified";
-        }
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         return $resp;
     }
