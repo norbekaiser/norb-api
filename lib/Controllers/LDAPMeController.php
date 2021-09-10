@@ -125,7 +125,7 @@ class LDAPMeController extends AbstractHeaderController
         }
         catch (\Exception $e)
         {
-            throw new HTTP403_Forbidden("Patch could not be applied");
+            throw new HTTP403_Forbidden($e->getMessage());
         }
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         return $resp;
@@ -139,7 +139,6 @@ class LDAPMeController extends AbstractHeaderController
         try
         {
             $session = $this->sessionGateway->find_session($this->Authorization);
-            $session->getUsrId();
             $this->ldap_user = $this->localLdapUserGateway->findUserID($session->getUsrId());
         }
         catch (\Exception $e)
@@ -158,15 +157,12 @@ class LDAPMeController extends AbstractHeaderController
             /** password must be at least 8 letters long */
             if(strlen($input['password']) < $RegistrationConfig->getMinimumLength())
             {
-
                 throw new HTTP400_BadRequest("Password must Contain at least ".$RegistrationConfig->getMinimumLength()." Characters");
             }
-
             if($RegistrationConfig->getRequiresLetters() && !(preg_match('[\D]',$input['password'])))
             {
                 throw new HTTP400_BadRequest("Password must Contain at least 1 Letter");
             }
-
             if($RegistrationConfig->getRequiresDigits() && !(preg_match('[\d]',$input['password'])))
             {
                 throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");

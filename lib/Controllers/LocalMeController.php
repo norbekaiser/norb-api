@@ -102,7 +102,6 @@ class LocalMeController extends AbstractHeaderController
         try
         {
             $session = $this->sessionGateway->find_session($this->Authorization);
-            $session->getUsrId();
             $this->local_user = $this->localUserGateway->findUserByUsrID($session->getUsrId());
         }
         catch (\Exception $e)

@@ -72,7 +72,7 @@ class LdapUserGateway
         $values["userPassword"] = "{CRYPT}".crypt($password,'$6$'.$salt);
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
-            throw new \Exception("Could not Modify Password");
+            throw new \Exception("Password can not be modified");
         }
     }
 
@@ -84,7 +84,7 @@ class LdapUserGateway
         $values["email"] = $email;
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
-            throw new \Exception("Could not Modify Email");
+            throw new \Exception("Enail can not be modified");
         }
     }
 }

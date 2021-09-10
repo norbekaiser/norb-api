@@ -105,12 +105,17 @@ If the User does not have a Valid Session or if he is not a LDAP User, the Reque
 ```
 
 #### Forbidden Action Data
-In Case the Actions is blocked due to a variety of reasons, a 403 error will be returned
+In Case the Actions is blocked due to a variety of reasons, a 403 error will be returned, as the modificitaion seems to be forbidden
 ```http request
 'HTTP/1.1 403 Forbidden'
 ```
 ```json
 {
-  "error": "Patch could not be applied"
+  "error": "Password can not be modified"
+}
+```
+```json
+{
+  "error": "Email can not be modified"
 }
 ```

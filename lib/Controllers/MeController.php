@@ -103,7 +103,6 @@ class MeController extends AbstractHeaderController
         try
         {
             $session = $this->SessionGateway->find_session($this->Authorization);
-            $session->getUsrId();
             $this->User = $this->UserGateway->findUser($session->getUsrId());
         }
         catch (\Exception $e)
