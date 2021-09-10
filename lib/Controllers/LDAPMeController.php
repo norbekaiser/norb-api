@@ -22,16 +22,17 @@ require_once __DIR__ . '/../Gateways/LocalLdapUserGateway.php';
 require_once __DIR__ . '/../Gateways/LdapUserGateway.php';
 require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
+require_once __DIR__ . '/../Exceptions/HTTP403_Forbidden.php';
 require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
 
-use norb_api\Exceptions\HTTP403_Forbidden;
 use norb_api\Models\LDAPUser;
 use norb_api\Gateways\SessionGateway;
 use norb_api\Gateways\LocalLdapUserGateway;
 use norb_api\Gateways\LdapUserGateway;
 use norb_api\Exceptions\HTTP422_UnprocessableEntity;
 use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Exceptions\HTTP403_Forbidden;
 use norb_api\Exceptions\HTTP400_BadRequest;
 use norb_api\Config\RegistrationConfig;
 use norb_api\Config\LDAPConfig;
