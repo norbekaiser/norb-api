@@ -21,11 +21,13 @@ require_once __DIR__ . '/Traits/Enabled.php';
 require_once __DIR__ . '/Traits/BaseDN.php';
 require_once __DIR__ . '/Traits/AdminPassword.php';
 require_once __DIR__ . '/Traits/AdminDN.php';
+require_once __DIR__ . '/Traits/AllowChangeEmail.php';
+require_once __DIR__ . '/Traits/AllowChangePassword.php';
 require_once __DIR__ . '/Config.php';
 
 class LDAPConfig extends Config
 {
-    use Enabled, URI, Port, AdminDN, AdminPassword, BaseDN;
+    use Enabled, URI, Port, AdminDN, AdminPassword, BaseDN, AllowChangeEmail, AllowChangePassword;
 
     public function __construct()
     {
@@ -35,6 +37,8 @@ class LDAPConfig extends Config
         $this->AdminDN ="";
         $this->AdminPassword ="";
         $this->BaseDN = "";
+        $this->AllowChangeEmail = false;
+        $this->AllowChangePassword = true;
         parent::__construct(__DIR__.'/../../config/ldap.ini');
     }
 
@@ -63,6 +67,14 @@ class LDAPConfig extends Config
         if(isset($ini_data['base_dn']) and is_string($ini_data['base_dn']))
         {
             $this->BaseDN = (string) $ini_data['base_dn'];
+        }
+        if(isset($ini_data['allow_change_email']) and is_bool($ini_data['allow_change_email']))
+        {
+            $this->AllowChangeEmail = (bool) $ini_data['allow_change_email'];
+        }
+        if(isset($ini_data['allow_change_password']) and is_bool($ini_data['allow_change_password']))
+        {
+            $this->AllowChangePassword = (bool) $ini_data['allow_change_password'];
         }
     }
 }
