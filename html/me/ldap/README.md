@@ -99,3 +99,14 @@ If the User does not have a Valid Session or if he is not a LDAP User, the Reque
 ```
 ```json
 ```
+
+#### Forbidden Action Data
+
+```http request
+'HTTP/1.1 403 Forbidden'
+```
+```json
+{
+  "error": "Password may not be changed"
+}
+```
