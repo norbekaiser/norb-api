@@ -24,7 +24,6 @@ require_once __DIR__ . '/../Exceptions/HTTP422_UnprocessableEntity.php';
 require_once __DIR__ . '/../Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/../Exceptions/HTTP403_Forbidden.php';
 require_once __DIR__ . '/../Exceptions/HTTP400_BadRequest.php';
-require_once __DIR__ . '/../Exceptions/HTTP500_InternalServerError.php';
 require_once __DIR__ . '/../Config/RegistrationConfig.php';
 
 
@@ -36,9 +35,7 @@ use norb_api\Exceptions\HTTP422_UnprocessableEntity;
 use norb_api\Exceptions\HTTP401_Unauthorized;
 use norb_api\Exceptions\HTTP403_Forbidden;
 use norb_api\Exceptions\HTTP400_BadRequest;
-use norb_api\Exceptions\HTTP500_InternalServerError;
 use norb_api\Config\RegistrationConfig;
-use norb_api\Config\LDAPConfig;
 
 class LDAPMeController extends AbstractHeaderController
 {
@@ -107,7 +104,6 @@ class LDAPMeController extends AbstractHeaderController
      * @throws HTTP400_BadRequest if the format is not valid, e.g. not enough digits or no valid email
      * @throws HTTP401_Unauthorized if the user is ńot authorized to do this request, e.g. invalid session or not an ldap user
      * @throws HTTP403_Forbidden if the user is ńot allowe to change his password
-     * @throws HTTP500_InternalServerError if for some reason the task can not be carreid out by the ldap ( e.g. an blocking acl)
      */
     protected function PatchRequest()
     {
@@ -121,7 +117,7 @@ class LDAPMeController extends AbstractHeaderController
                 $LdapUserGateway->ChangePassword($this->ldap_user,$input['password']);
                 $resp['data']['password'] = "modified";
             }
-            if(isset($input['email']))
+            else if(isset($input['email']))
             {
                 $LdapUserGateway->ChangeEmail($this->ldap_user,$input['email']);
                 $resp['data']['email'] = "modified";
@@ -129,9 +125,8 @@ class LDAPMeController extends AbstractHeaderController
         }
         catch (\Exception $e)
         {
-            throw new HTTP500_InternalServerError("Patch could not be applied");
+            throw new HTTP403_Forbidden("Patch could not be applied");
         }
-
         $resp['status_code_header'] = 'HTTP/1.1 200 OK';
         return $resp;
     }
@@ -176,19 +171,6 @@ class LDAPMeController extends AbstractHeaderController
             {
                 throw new HTTP400_BadRequest("Password must Contain at least 1 Digit");
             }
-        }
-
-        $LdapConfig = new LDAPConfig();
-        /**
-         * Verify that the Password or Email is allowed to be changed
-         */
-        if(!$LdapConfig->getAllowChangePassword() && isset($input['password']))
-        {
-            throw new HTTP403_Forbidden("Password may not be changed");
-        }
-        if(!$LdapConfig->getAllowChangeEmail() && isset($input['email']))
-        {
-            throw new HTTP403_Forbidden("email may not be changed");
         }
 
     }

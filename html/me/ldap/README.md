@@ -72,14 +72,18 @@ Authorization: 1234567890
 ### Results
 
 #### On Success
-It will return if the value was successfully changed
+It will return if the value was successfully changed, only one value at a time may be changed, precedence is taken by code order
 
 ```http request
 'HTTP/1.1 200 OK'
 ```
 ```json
 {
-    "password": "modified",
+    "password": "modified"
+}
+```
+```json
+{
     "email": "modified"
 }
 ```
@@ -101,12 +105,12 @@ If the User does not have a Valid Session or if he is not a LDAP User, the Reque
 ```
 
 #### Forbidden Action Data
-
+In Case the Actions is blocked due to a variety of reasons, a 403 error will be returned
 ```http request
 'HTTP/1.1 403 Forbidden'
 ```
 ```json
 {
-  "error": "Password may not be changed"
+  "error": "Patch could not be applied"
 }
 ```

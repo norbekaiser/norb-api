@@ -78,7 +78,9 @@ class LdapUserGateway
 
     public function ChangeEmail(LDAPUser $LDAPUser,string $email): void
     {
-        //todo check for email is unique and can be changed
+        //delegated to the ldap, e.g blocking with the following acl
+        //{1}to dn.children="ou=users,dc=ldap,dc=example,dc=om" attrs=mail by dn.children="ou=manager,dc=ldap,dc=example,dc=com" write by self read by anonymous none
+        //so that only one self may change it
         $values["email"] = $email;
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
