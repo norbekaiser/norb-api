@@ -79,12 +79,12 @@ class LdapUserGateway
     public function ChangeEmail(LDAPUser $LDAPUser,string $email): void
     {
         //delegated to the ldap, e.g blocking with the following acl
-        //{1}to dn.children="ou=users,dc=ldap,dc=example,dc=om" attrs=mail by dn.children="ou=manager,dc=ldap,dc=example,dc=com" write by self read by anonymous none
+        //{1}to dn.children="ou=users,dc=ldap,dc=example,dc=om" attrs=mail by dn.children="cn=manager,dc=ldap,dc=example,dc=com" write by self read by anonymous none
         //so that only one self may change it
         $values["email"] = $email;
         if(! ldap_modify($this->ldap_db,$LDAPUser->getDn(),$values))
         {
-            throw new \Exception("Enail can not be modified");
+            throw new \Exception("Email may not be modified");
         }
     }
 }
