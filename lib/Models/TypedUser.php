@@ -13,23 +13,32 @@
 ?>
 <?php
 
-namespace norb_api\CommonGatewayInterfaces;
+namespace norb_api\Models;
 
-require_once __DIR__ . '/../Controllers/LDAPMeController.php';
-require_once __DIR__ . '/AuthorizingAbstractCGI.php';
+require_once __DIR__ .'/User.php';
 
-use norb_api\Controllers\LDAPMeController;
-
-class CGI_LDAPme extends AuthorizingAbstractCGI
+class TypedUser extends User
 {
-    public function __construct()
+
+    private $type;
+
+    public function getType(): string
     {
-        parent::__construct();
+        return $this->type;
     }
 
-    public function processRequest()
+    public function setType(string $type): void
     {
-        $cont = new LDAPMeController($this->reqMeth,$this->Authorization);
-        $this->resp = $cont->processRequest();
+        $this->type = $type;
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            array(
+                "type" => $this->type
+            )
+        );
     }
 }

@@ -31,5 +31,14 @@ class LocalUser extends User
         $this->username = $username;
     }
 
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            array(
+                "username" => $this->username
+            )
+        );
+    }
 
 }

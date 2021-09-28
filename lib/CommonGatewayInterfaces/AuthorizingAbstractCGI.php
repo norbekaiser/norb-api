@@ -25,10 +25,9 @@ abstract class AuthorizingAbstractCGI extends AbstractCGI
     {
         $this->ExtractAuthorizationToken();
         parent::__construct();
-
     }
 
-    public function ExtractAuthorizationToken()
+    public function ExtractAuthorizationToken() : void
     {
         if(array_key_exists('Authorization',$_SERVER))
         {

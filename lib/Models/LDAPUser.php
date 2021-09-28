@@ -31,4 +31,14 @@ class LDAPUser extends User
     {
         $this->DN = $DN;
     }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            array(
+                "dn" => $this->DN
+            )
+        );
+    }
 }

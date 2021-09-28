@@ -15,9 +15,9 @@
 
 namespace norb_api\Config;
 
+require_once __DIR__ . '/Config.php';
 require_once __DIR__ . '/Traits/SecretKey.php';
 require_once __DIR__ . '/Traits/SiteKey.php';
-require_once __DIR__ . '/Config.php';
 
 class FriendlycaptchaConfig extends Config
 {

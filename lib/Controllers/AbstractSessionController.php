@@ -13,43 +13,47 @@
 ?>
 <?php
 
-namespace norb_api\Connectors;
+namespace norb_api\Controllers;
 
-require_once __DIR__ . '/../Config/SQLConfig.php';
-require_once __DIR__ . '/../Exceptions/NoConnectivitySQL.php';
-require_once __DIR__ . '/DatabaseConnector.php';
+use norb_api\Exceptions\HTTP401_Unauthorized;
+use norb_api\Gateways\SessionGateway;
 
-use norb_api\Config\SQLConfig;
-use norb_api\Exceptions\NoConnectivitySQL;
+require_once __DIR__ . '/../../lib/Gateways/SessionGateway.php';
+require_once __DIR__ . '/AbstractHeaderController.php';
 
-class DatabaseConnectorSQL extends DatabaseConnector
+abstract class AbstractSessionController extends AbstractHeaderController
 {
-    private $connection = null;
+    protected $Session = null;
 
-    public function __construct(SQLConfig $config)
+    public function __construct(string $requestMethod,string $Authorization)
+    {
+        parent::__construct($requestMethod,$Authorization);
+
+        $this->require_valid_session();
+        $this->ParseSession();
+    }
+
+    protected function ParseAuthorization()
     {
         try
         {
-            $this->connection = mysqli_init();
-//            $mysqli->options();
-            $this->connection->real_connect($config->getHostname(),$config->getUsername(),$config->getPassword(),$config->getDatabaseName(),$config->getPort(),$config->getUnixSocket(),MYSQLI_CLIENT_FOUND_ROWS);
+            $SessionGateway = new SessionGateway();
+            $this->Session = $SessionGateway->find_session($this->Authorization);
         }
         catch (\Exception $e)
         {
-            throw new NoConnectivitySQL();
+            $this->Session= null;
         }
     }
 
-    public function __destruct()
+
+    protected function require_valid_session() :void
     {
-        if(isset($this->connection))
-        {
-            $this->connection->close();
+        if(is_null($this->Session)){
+            throw new HTTP401_Unauthorized("Valid Session Required");
         }
     }
 
-    public function getConnection(): \mysqli
-    {
-         return $this->connection;
-    }
+
+    protected abstract function ParseSession();
 }
