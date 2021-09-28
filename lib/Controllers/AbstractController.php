@@ -53,12 +53,6 @@ abstract class AbstractController //TODO consider, abstract authorized controlel
         return $this->MethodNotAvailableResponse();
     }
 
-    protected function OptionsRequest()
-    {
-        $resp['status_code_header'] = 'HTTP/1.1 200 OK';
-        return $resp;
-    }
-
     public function processRequest()
     {
         switch ($this->requestMethod)
@@ -77,9 +71,6 @@ abstract class AbstractController //TODO consider, abstract authorized controlel
                 break;
             case 'DELETE':
                 $resp = $this->DelRequest();
-                break;
-            case 'OPTIONS':
-                $resp = $this->OptionsRequest();
                 break;
             default:
                 $resp = $this->MethodNotAvailableResponse();

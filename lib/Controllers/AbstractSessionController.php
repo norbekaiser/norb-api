@@ -19,6 +19,7 @@ use norb_api\Exceptions\HTTP401_Unauthorized;
 use norb_api\Gateways\SessionGateway;
 
 require_once __DIR__ . '/../../lib/Gateways/SessionGateway.php';
+require_once __DIR__ . '/../../lib/Exceptions/HTTP401_Unauthorized.php';
 require_once __DIR__ . '/AbstractHeaderController.php';
 
 abstract class AbstractSessionController extends AbstractHeaderController
@@ -28,7 +29,6 @@ abstract class AbstractSessionController extends AbstractHeaderController
     public function __construct(string $requestMethod,string $Authorization)
     {
         parent::__construct($requestMethod,$Authorization);
-
         $this->require_valid_session();
         $this->ParseSession();
     }
