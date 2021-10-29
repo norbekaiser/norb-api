@@ -55,7 +55,7 @@ class LdapUserGateway
     {
         $ldap_config = new LDAPConfig();
         //Search Ldap for User
-        $search = ldap_search($this->ldap_db,$ldap_config->getBaseDN(),"(&(objectClass=*)(uid=".ldap_escape($username,"",LDAP_ESCAPE_FILTER)."))",['dn','uid']);
+        $search = ldap_search($this->ldap_db,$ldap_config->getBaseDN(),"(&(objectClass=*)(uid:caseExactMatch:=".ldap_escape($username,"",LDAP_ESCAPE_FILTER)."))",['dn','uid']);
         $search_result = ldap_get_entries($this->ldap_db,$search);
         //only one result should be found, if it smaller, no user exists, if there is more than one, then its hard to decide whome to authenticate against
         if($search_result["count"] != 1)
